@@ -349,11 +349,18 @@
             document.getElementById("EstimatedCost").value = "Estimated cost benefits";
             document.getElementById("IdeaServiceLine").value = "";
             document.getElementById("IdeaService").value = "";
-            $("#IdeaServiceLine").prop("disabled", false);
-            $("#IdeaService").prop("disabled", false);
-            $('#IdeaServiceLine').get(0).selectedIndex = 0;
-            $('#IdeaService').get(0).selectedIndex = 0;
-            $('#IdeaLocation').get(0).selectedIndex = 0;
+
+          
+		$("#IdeaServiceLine").prop("disabled", false);
+		$('#IdeaServiceLine').get(0).selectedIndex = 0;
+		
+        $("#IdeaService").prop("disabled", true);//bug fixed
+		$('#IdeaService').find('option').remove().end().append('<option value=""></option>').val('');
+		
+        $("#IdeaLocation").prop("disabled", true);
+        $('#IdeaLocation').find('option').remove().end().append('<option value=""></option>').val('');
+			
+			
             $('#Currency').get(0).selectedIndex = 0;
             $("#TagChallengeLinkID").empty();
             $("#TagChallengeLink").hide();
