@@ -1,0 +1,607 @@
+<script type="text/javascript" src="../Style%20Library/ThinkBox_Script/BootSideMenu.js"></script><link rel="stylesheet" href="../Style%20Library/ThinkBox_CSS/BootSideMenu.css">
+<style>
+.pi-wrapper { padding: 9px 13px; width: 100%; float: left; overflow-y: scroll; height: 100% !important; overflow-x: hidden; z-index: 99; background: #f3f3f3; }
+</style>
+<script type="text/javascript">
+    var arrChallenge = []; var buyersPortfolio = []; var arrAccountNameURL = []; var arrAccountName = []; var counter = 0; var implementedCount = 0; var ItemCount; var i = 0; var locatio = localStorage.getItem("userLocation"); var role = localStorage.getItem("userRole"); var locat = localStorage.getItem("userLocation"); var roleLeader = localStorage.getItem("userLeaderType"); var vertical; var acc; var em; var drs; var flagGBand; var currentUser; var arrImageURL = []; var IdeaPosted = "IdeaPosted"; var IdeaNew = "NewIdeas"; var ChallengePosted = "ChallengePosted"; var ChallengeNew = "NewChallenges"; var IdeaTypeTop = "Ideas"; var IdeaTypeChallenges = "Challenges"; var listTitle = "Charts"; var title = "Leader Challenge"; var key = "Vertical Leader Query New"; var sortedServiceLine = []; var leaderrole = localStorage.getItem("userLeaderType"); var leaderLocation = localStorage.getItem("userLocation"); var leaderVertical = localStorage.getItem("userVertical"); var vertical = localStorage.getItem("userVertical"); var leaderEmail = $().SPServices.SPGetCurrentUser({ fieldName: "Email", debug: false });
+$(document).ready(function () {
+    drs = checkDr(); flagGBand = fetchGBand(); raisedBy = "Ideator"; $("#IdeaService").prop("disabled", true); $("#IdeaLocation").prop("disabled", true); jQuery('#EstimatedHours,#EstimatedCost').keyup(function () { this.value = this.value.replace(/[^0-9\.]/g, ''); }); $('#IdeaDesc').keyup(function () { var max = 600; var len = $(this).val().length; if (len >= max) { $('#countdes').text(' you have reached the limit'); } else { var char = max - len; $('#countdes').text(char + ' characters left'); } }); $('#IdeaName').keyup(function () { var max = 200; var len = $(this).val().length; if (len >= max) { $('#countTitle').text(' you have reached the limit'); } else { var char = max - len; $('#countTitle').text(char + ' characters left'); } }); var LHSTextHeight = $('#LHSText').innerHeight(); var RHSTextHeight = $('#RHSText').innerHeight(); if (LHSTextHeight > RHSTextHeight) { $('#RHSText').innerHeight(LHSTextHeight); } else { $('#LHSText').innerHeight(RHSTextHeight); } getListDataDetails(localStorage.getItem("userLocation")); getOpenChallenges(); var currentYear = (new Date).getFullYear(); var currentMonth = (new Date).getMonth() + 1; currentMonth = GetMonthName(currentMonth); var IdeaMonthYear = currentMonth + " " + currentYear; var camlQueryIdeas = createCamlQuery(leaderrole, leaderLocation, leaderVertical, IdeaTypeTop); var camlQueryChallenges = createCamlQuery(leaderrole, leaderLocation, leaderVertical, IdeaTypeChallenges); var IdeaStatus = "IdeasPosted"; var IdeaPostedCount = getCountIdea(IdeaMonthYear, IdeaStatus); if ((typeof IdeaPostedCount == 'undefined') || (!IdeaPostedCount)) { IdeaPostedCount = "0"; } IdeaPostedCount = parseInt(IdeaPostedCount); $('#IdeasPostedCount').text(IdeaPostedCount); var IdeaStatus = "NewIdeas"; var NewIdeas = getCountIdea(IdeaMonthYear, IdeaStatus); if ((typeof NewIdeas == 'undefined') || (!NewIdeas)) { NewIdeas = "0"; } $('#NewIdeasCount').text(NewIdeas); var ChallengeStatus = "ChallengesPosted"; var challengeCount = getCountChallenge(IdeaMonthYear, ChallengeStatus); $('#ChallengesPostedCount').text(challengeCount); var newChallengeStatus = "NewChallenges"; var newChallenge = getCountChallenge(IdeaMonthYear, newChallengeStatus); $('#NewChallengesCount').text(newChallenge); var heading = "Year To Date"; $('#MonthlyStatistics').text(heading); getListDataForImplement(leaderLocation, leaderVertical); var configdataQuery = fetchDatafromConfigList("Approver Challenge Query"); var finalCamlQuery = changeQuery(configdataQuery); var configListValue = getConfigListData(finalCamlQuery); getLeaderImageUrl(finalCamlQuery); $("#TagChallengeLinkID").empty(); $("#TagChallengeLink").hide(); $("#OpenChallengeLink").show(); function ServiceLineSortByName(a, b) { var aName = a.text.toLowerCase(); var bName = b.text.toLowerCase(); return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0)); } $('#chkCrossfunction').click(function () { var dd = document.getElementById("IdeaServiceLine"); for (var i = 0; i < dd.options.length; i++) { if (dd.options[i].text === "Select Line") { dd.selectedIndex = i; break; } } var dd = document.getElementById("IdeaService"); for (var i = 0; i < dd.options.length; i++) { if (dd.options[i].text === "Select Service") { dd.selectedIndex = i; break; } } var dd = document.getElementById("IdeaLocation"); for (var i = 0; i < dd.options.length; i++) { if (dd.options[i].text === "Select Location") { dd.selectedIndex = i; break; } } if (!$(this).is(':checked')) { $('#CrossFunctiondiv').hide(); $("#CrossFunctionVertical").empty(); $("#IdeaServiceLine").prop("disabled", false); $("#IdeaService").empty(); $("#IdeaService").prop("disabled", true); $("#IdeaLocation").empty(); $("#IdeaLocation").prop("disabled", true); } else { var appendThis1 = ""; $("#CrossFunctionVertical").empty(); $("#IdeaServiceLine").prop("disabled", true); $("#IdeaService").empty(); $("#IdeaService").prop("disabled", true); $("#IdeaLocation").empty(); $("#IdeaLocation").prop("disabled", true); $('#CrossFunctiondiv').show(); var query = "<Query><Where><Eq><FieldRef Name='Location'/><Value Type='Text'>" + thinkBox.userLocation + "</Value></Eq></Where></Query>"; $().SPServices({ operation: "GetListItems", async: false, listName: "CrossFunctionDetails", CAMLViewFields: "<ViewFields><FieldRef Name='CrossFunction' /></ViewFields>", CAMLQuery: query, completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var vcrossfunction = $(this).attr("ows_CrossFunction"); if (vcrossfunction !== thinkBox.userVertical) { appendThis1 += "<option value='" + vcrossfunction + "'>" + vcrossfunction + "</option>"; } }); } }); $("#CrossFunctionVertical").append(appendThis1); } }); if ((thinkBox.userLeaderType === "Global Leader") || (thinkBox.userLeaderType == "Central Leader") || (thinkBox.userLeaderType == "Functional Leader")) { var charData = []; var sortedServiceLine = []; $("#IdeaServiceLine").empty(); $("#IdeaServiceLine").append("<option value='Line'>Select Line</option>"); $().SPServices({ operation: "GetListItems", async: false, listName: "ServiceLineGlobalCentralLeader", CAMLViewFields: "<ViewFields><FieldRef Name='ServiceLine' /></ViewFields>", CAMLQuery: "<Query><OrderBy><FieldRef Name='Modified' Ascending='False' /></OrderBy></Query>", completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var vServiceline = $(this).attr("ows_ServiceLine"); if ($.inArray(vServiceline, charData) == -1) { charData.push(vServiceline); sortedServiceLine.push({ text: $(this).attr("ows_ServiceLine"), value: $(this).attr("ows_ServiceLine") }); } }); } }); sortedServiceLine.sort(ServiceLineSortByName); for (var i = 0; i < sortedServiceLine.length ; i++) { var appendThis = "<option value='" + sortedServiceLine[i].text + "'>" + sortedServiceLine[i].value + "</option>"; $("#IdeaServiceLine").append(appendThis); } } else { var charData = []; var sortedServiceLine = []; $("#IdeaServiceLine").empty(); $("#IdeaServiceLine").append("<option value='Line'>Select Line</option>"); $().SPServices({ operation: "GetListItems", async: false, listName: "ServiceLine", CAMLViewFields: "<ViewFields><FieldRef Name='ServiceLine' /></ViewFields>", CAMLQuery: "<Query><Where><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + thinkBox.userVertical + "</Value></Eq><Eq><FieldRef Name='ServiceLineLocation' /><Value Type='Text'>" + thinkBox.userLocation + "</Value></Eq></And></Where></Query>", completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var vServiceline = $(this).attr("ows_ServiceLine"); if ($.inArray(vServiceline, charData) == -1) { charData.push(vServiceline); sortedServiceLine.push({ text: $(this).attr("ows_ServiceLine"), value: $(this).attr("ows_ServiceLine") }); } }); } }); sortedServiceLine.sort(ServiceLineSortByName); for (var i = 0; i < sortedServiceLine.length ; i++) { var appendThis = "<option value='" + sortedServiceLine[i].text + "'>" + sortedServiceLine[i].value + "</option>"; $("#IdeaServiceLine").append(appendThis); } } $("#IdeaServiceLine").change(function () { $("#IdeaService").prop("disabled", false); if ((thinkBox.userLeaderType === "Global Leader") || (thinkBox.userLeaderType === "Central Leader") || (thinkBox.userLeaderType === "Functional Leader")) { $("#IdeaService").prop("disabled", true); $("#IdeaLocation").prop("disabled", true); $("#IdeaService").empty(); var appendThis1 = "<option value='ALL'>ALL</option>"; $("#IdeaService").append(appendThis1); $("#IdeaLocation").empty(); $("#IdeaLocation").append(appendThis1); } else { var selectitem = $("#IdeaServiceLine").val(); var serviceArray = []; var sortedService = []; $("#IdeaService").html(''); $("#IdeaService").append("<option value='Service'>Select Service</option>"); var query = "<Query><Where><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + thinkBox.userVertical + "</Value></Eq><And><Eq><FieldRef Name='ServiceLine'/><Value Type='Text'>" + selectitem + "</Value></Eq><Eq><FieldRef Name='ServiceLineLocation' /><Value Type='Text'>" + thinkBox.userLocation + "</Value></Eq></And></And></Where></Query>"; $().SPServices({ operation: "GetListItems", async: false, listName: "ServiceLine", CAMLViewFields: "<ViewFields><FieldRef Name='Service' /></ViewFields>", CAMLQuery: query, completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var vservice = $(this).attr("ows_Service"); if (($.inArray(vservice, serviceArray) == -1)) { serviceArray.push(vservice); sortedService.push({ text: $(this).attr("ows_Service"), value: $(this).attr("ows_Service") }); } }); } }); sortedService.sort(ServiceLineSortByName); for (var i = 0; i < sortedService.length ; i++) { var appendThis1 = "<option value='" + sortedService[i].text + "'>" + sortedService[i].value + "</option>"; $("#IdeaService").append(appendThis1); } } }); $("#IdeaService").change(function () { var sortedLocation = []; $("#IdeaLocation").prop("disabled", false); var selectitemIdeaServiceLine = $("#IdeaServiceLine").val(); var selectitemService = $("#IdeaService").val(); $("#IdeaLocation").empty(); $("#IdeaLocation").html(''); $("#IdeaLocation").append("<option value='Location'>Select Location</option>"); var query = "<Query><Where><And><Eq><FieldRef Name='ServiceLineLocation' /><Value Type='Text'>" + thinkBox.userLocation + "</Value></Eq><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + thinkBox.userVertical + "</Value></Eq><And><Eq><FieldRef Name='ServiceLine'/><Value Type='Text'>" + selectitemIdeaServiceLine + "</Value></Eq><Eq><FieldRef Name='Service'/><Value Type='Text'>" + selectitemService + "</Value></Eq></And></And></And></Where></Query>"; $().SPServices({ operation: "GetListItems", async: false, listName: "ServiceLine", CAMLViewFields: "<ViewFields><FieldRef Name='Location' /></ViewFields>", CAMLQuery: query, completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var vLocation = $(this).attr("ows_Location"); sortedLocation.push({ text: $(this).attr("ows_Location"), value: $(this).attr("ows_Location") }); }); } }); sortedLocation.sort(ServiceLineSortByName); for (var i = 0; i < sortedLocation.length ; i++) { var appendThis1 = "<option value='" + sortedLocation[i].text + "'>" + sortedLocation[i].value + "</option>"; $("#IdeaLocation").append(appendThis1); } }); if (locatio == "Egypt") { $("#IdeaLocation").empty(); var appendThis1 = "<option value='Egypt'>Egypt</option>"; $("#IdeaLocation").append(appendThis1); } else if (locatio == "Romania") { $("#IdeaLocation").empty(); var appendThis1 = "<option value='Romania'>Romania</option>"; $("#IdeaLocation").append(appendThis1); } else if (locatio == "Budapest") { $("#IdeaLocation").empty(); var appendThis1 = "<option value='Budapest'>Budapest</option>"; $("#IdeaLocation").append(appendThis1); }
+$("#btnReset").click(function () { $('#submit').css('opacity', '1.0'); document.getElementById("IdeaName").value = "Enter Title"; document.getElementById("IdeaDesc").value = "Enter Description"; document.getElementById("EstimatedHours").value = "Number of hours saved per month"; document.getElementById("EstimatedCost").value = "Estimated cost benefits"; document.getElementById("IdeaServiceLine").value = ""; document.getElementById("IdeaService").value = ""; $("#IdeaServiceLine").prop("disabled", false); $("#IdeaService").prop("disabled", false); $('#IdeaServiceLine').get(0).selectedIndex = 0; $('#IdeaService').get(0).selectedIndex = 0; $('#IdeaLocation').get(0).selectedIndex = 0; $('#Currency').get(0).selectedIndex = 0; $("#TagChallengeLinkID").empty(); $("#TagChallengeLink").hide(); $("#OpenChallengeLink").show(); $('#CrossFunctiondiv').hide(); $("#CrossFunctionVertical").empty(); });
+$("#submit").click(function () {
+    if (validateAllFields()) {
+        $('#submit').css('opacity', '0.4');
+        var TagChallengeID = $("#TagChallengeLinkID").html();
+        var Title = $("#IdeaName").val();
+        var IdeaDesc = $("#IdeaDesc").val();
+        var EstimatedHours = $("#EstimatedHours").val();
+        if (EstimatedHours == 'Number of hours saved per month' || EstimatedHours == '')
+        { EstimatedHours = parseInt(0); }
+        var EstimatedCost = $("#EstimatedCost").val();
+        if (EstimatedCost == 'Estimated cost benefits' || EstimatedCost == '')
+        { EstimatedCost = parseInt(0); }
+        var Currency = $("#Currency").val();
+        var IdeaServiceLine = $("#IdeaServiceLine").val();
+        var IdeaService = $("#IdeaService").val();
+        var IdeaLocation = $("#IdeaLocation").val();
+        var IdeatorLocation = localStorage.getItem("userLocation");
+        var crossfunction = "";
+        var Ideatype = "Own function";
+        if ($("#CrossFunctionVertical").val()) {
+            crossfunction = $("#CrossFunctionVertical").val();
+            Ideatype = "Cross function";
+        }
+        else {
+            fetchBuyersAndPortfolio(localStorage.getItem("userVertical"), IdeaServiceLine, IdeaService, IdeaLocation);
+        }
+        var listname = "V-Ideas";
+        var IdeaStatus = "";
+        if (role == "Ideator" || role == "Approver") {
+            raisedBy = "Ideator";
+            IdeaStatus = "Waiting for L1";
+        }
+        else {
+            IdeaStatus = "Waiting for L3";
+            raisedBy = "Leader";
+        }
+        AddIdea(IdeaStatus, Title, IdeaDesc, EstimatedHours, EstimatedCost, Currency, TagChallengeID, IdeaServiceLine, IdeaService, raisedBy, leaderVertical, listname, IdeaLocation, crossfunction, Ideatype, IdeatorLocation);
+    }
+});
+})
+
+function fetchBuyersAndPortfolio(userVertical, ideaServiceLine, ideaservice, ideaLocation) {
+    var query = "<Query><Where><And><Eq><FieldRef Name='ServiceLineLocation' /><Value Type='Text'>" + localStorage.getItem("userLocation") + "</Value></Eq><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + userVertical + "</Value></Eq><And><Eq><FieldRef Name='ServiceLine'/><Value Type='Text'>" + ideaServiceLine + "</Value></Eq><And><Eq><FieldRef Name='Service'/><Value Type='Text'>" + ideaservice + "</Value></Eq><Eq><FieldRef Name='Location'/><Value Type='Text'>" + ideaLocation + "</Value></Eq></And></And></And></And></Where></Query>";
+    buyersPortfolio = [];
+    $().SPServices({
+        operation: "GetListItems",
+        async: false,
+        listName: "ServiceLine",
+        CAMLViewFields: "<ViewFields><FieldRef Name='Buyer1' /><FieldRef Name='Buyer2' /><FieldRef Name='Buyer3' /><FieldRef Name='PortfolioServiceLine' /></ViewFields>",
+        CAMLQuery: query,
+        completefunc: function (xData, Status) {
+            $(xData.responseXML).SPFilterNode("z:row").each(function () {
+                var buyer1 = $(this).attr("ows_Buyer1");
+                var buyer2 = $(this).attr("ows_Buyer2");
+                var buyer3 = $(this).attr("ows_Buyer3");
+                var portfolioServiceLine = $(this).attr("ows_PortfolioServiceLine");
+                buyersPortfolio.push(buyer1);
+                buyersPortfolio.push(buyer2);
+                buyersPortfolio.push(buyer3);
+                buyersPortfolio.push(portfolioServiceLine);
+            });
+        }
+    });
+}
+function getCountIdea(IdeaMonthYear, IdeaStatus) { ItemCount = 0; ItemCount += parseInt(GetIdeaCount(IdeaMonthYear, IdeaStatus)); return ItemCount; }    
+function GetIdeaCount(IdeaMonthYear, IdeaStatus) { ItemCount = 0; var listname = "V-Ideas"; if (IdeaStatus == "IdeasPosted") { var camlQuery = ""; camlQuery = "<Query><Where><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + leaderLocation + "</Value></Eq><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + leaderVertical + "</Value></Eq></And></Where></Query>"; $().SPServices({ operation: "GetListItems", async: false, listName: listname, CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='Modified' /></ViewFields>", CAMLQuery: camlQuery, completefunc: function (xData, Status) { ItemCount = $(xData.responseXML).SPFilterNode("rs:data").attr("ItemCount"); if (isNaN(ItemCount)) { ItemCount = 0; } }});}else {var camlQuery = ""; camlQuery = "<Query><Where><And><Eq><FieldRef Name='IdeaMonthYear' /><Value Type='Text'>" + IdeaMonthYear + "</Value></Eq>"; camlQuery += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + leaderLocation + "</Value></Eq><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + leaderVertical + "</Value></Eq></And></And></Where></Query>"; $().SPServices({ operation: "GetListItems", async: false, listName: listname, CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='Modified' /></ViewFields>", CAMLQuery: camlQuery, completefunc: function (xData, Status) { ItemCount = $(xData.responseXML).SPFilterNode("rs:data").attr("ItemCount"); if (isNaN(ItemCount)) { ItemCount = 0; }}});} return ItemCount; };    
+function fetchGBand() { var band = "Local  Band G"; var flagGBand = false; var userEmail = $().SPServices.SPGetCurrentUser({ fieldName: "Email", debug: false }); $().SPServices({ operation: "GetListItems", async: false, listName: "EmployeeDetails", CAMLViewFields: "<ViewFields><FieldRef Name='Band'/></ViewFields>", CAMLQuery: "<Query><Where><Eq><FieldRef Name='Title'/><Value Type='Text'>" + userEmail + "</Value></Eq></Where></Query>", completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var band = $(this).attr("ows_Band"); if ((band.indexOf("E") >= 0) || (band.indexOf("E2") >= 0) || (band.indexOf("F") >= 0) || (band.indexOf("G") >= 0)) { flagGBand = true; }});}});return flagGBand;}
+function getConfigListData(camlQuery) { $().SPServices({ operation: "GetListItems", async: false, listName: "Configuration List", CAMLViewFields: "<ViewFields><FieldRef Name='Value' /></ViewFields>", CAMLQuery: camlQuery, completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var ChallengeTitle = $(this).attr("ows_Value"); }); } }); }
+function getOpenChallenges() { var query = "<Query><Where>"; if (thinkBox.userLeaderType == "Global Leader") { query += fetchDatafromConfigList("Global Leader Query"); } else if (thinkBox.userLeaderType == "Functional Leader") { query += fetchDatafromConfigList("Functional Leader Query"); query = query.replace(/vertical/g, thinkBox.userVertical); query = query.replace(/drs/g, drs);} else if (thinkBox.userLeaderType == "Central Leader") { query += fetchDatafromConfigList("Central Leader Query"); query = query.replace(/locatio/g, thinkBox.userLocation); query = query.replace(/drs/g, drs);} else if (thinkBox.userLeaderType == "Vertical Leader") { query += fetchDatafromConfigList("Vertical Leader Query"); query = query.replace(/locatio/g, thinkBox.userLocation); query = query.replace(/vertical/g, thinkBox.userVertical); query = query.replace(/drs/g, drs); } else if (thinkBox.userRole == "Approver") { query += fetchDatafromConfigList("Approver Challenge Query "); query = query.replace(/locatio/g, thinkBox.userLocation); query = query.replace(/vertical/g, thinkBox.userVertical); } else if (thinkBox.userRole == "Ideator") { if (!(drs)) { query += fetchDatafromConfigList("None"); query = query.replace(/locatio/g, thinkBox.userLocation); query = query.replace(/vertical/g, thinkBox.userVertical); } else if ((drs)) { query += fetchDatafromConfigList("Only DR"); query = query.replace(/locatio/g, thinkBox.userLocation); query = query.replace(/vertical/g, thinkBox.userVertical); query = query.replace(/drs/g, drs);}} query += "</Where><OrderBy><FieldRef Name='Created' Ascending='False'/></OrderBy></Query>"; $().SPServices({ operation: "GetListItems", async: false, listName: "Challenges", CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='Description' /><FieldRef Name='Author' /><FieldRef Name='IdeasFunded' /><FieldRef Name='IdeasTagged' /><FieldRef Name='PictureURL' /><FieldRef Name='TotalFundings' /></ViewFields>", CAMLQuery: query, completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var objChallenge = { "ChallengeID": $(this).attr("ows_ID"), "ChallengeTitle": $(this).attr("ows_Title"), "Created": $(this).attr("ows_Created"), "Author": $(this).attr("ows_Author"), "ChallengeDesc": $(this).attr("ows_Description"), "IdeasFunded": $(this).attr("ows_IdeasFunded"), "IdeasTagged": $(this).attr("ows_IdeasTagged"), "LeaderImageUrl": $(this).attr("ows_PictureURL"), "TotalFundings": $(this).attr("ows_TotalFundings") }; arrChallenge.push(objChallenge); });}});}
+function changeQuery(query) { drs = checkDr(); var finalQuery = "<Query><Where>"; finalQuery += query; finalQuery = finalQuery.replace(/locatio/g, leaderLocation); finalQuery = finalQuery.replace(/vertical/g, leaderVertical); finalQuery = finalQuery.replace(/drs/g, drs); finalQuery += "</Where><OrderBy><FieldRef Name='Created' Ascending='False'/></OrderBy></Query>"; return finalQuery;}    
+function AllChallenges() {ShowChallenges();}
+function ShowChallenges() {$("#MainModalBody").empty(); var PopupStart; var PopupText; var PopupEnd; var body = ""; $.each(arrChallenge, function (index, value) { var ChallengeID = value.ChallengeID; var ChallengeTitle = value.ChallengeTitle; var ChallengeDesc = value.ChallengeDesc; var CreatedBy = value.Author; var TotalIdeasTagged = value.IdeasTaggd; if (!TotalIdeasTagged || isNaN(TotalIdeasTagged)) { TotalIdeasTagged = 0; } TotalIdeasTagged = parseInt(TotalIdeasTagged); var TotalIdeasFunded = value.IdeasFunded; if (!TotalIdeasFunded || isNaN(TotalIdeasFunded)) { TotalIdeasFunded = 0;} TotalIdeasFunded = parseInt(TotalIdeasFunded); var TotalFundings = value.TotalFundings; if (!TotalFundings || isNaN(TotalFundings)) { TotalFundings = 0;} TotalFundings = parseInt(TotalFundings); var arrCreatedBy = CreatedBy.split('#'); var arrCreatedByForID = CreatedBy.split(';'); var Author = arrCreatedBy[1]; var ImageUrl = value.LeaderImageUrl; if (!ImageUrl) { ImageUrl = "/group/thinkbox/Style%20Library/Images/DefaultUser.png"; } var LeaderName = Author; var ExpiresIn = ExpiresInDays(value.Created); body += "<div class='pi-content'><span class='top-left'> </span> <span class='top-right'> </span> <span class='bottom-left'> </span> <span class='bottom-right'></span> <div id='LHSText' style='padding:0 10px 0 0; margin: 0;min-height:120px;' class='col-md-9 col-xs-9 PD-XS-RT border-right MR-SM-RT'> <div class='tag-popup-height'> <h1><div><b>" + ChallengeTitle + "</b></div></h1> <p>" + ChallengeDesc + "</p> </div> <div style='margin-top:0px;' class='bottom-link'> <img class='user-img' src='/group/thinkbox/Style Library/Images/profile_pic.png' alt=''> <span style='width:0px!important;' class='round-user widthnone'> <img src='" + ImageUrl + "'></span> <span class='exp-days pull-left'> <i>By: " + LeaderName + "</i> </span> </div> </div> <div id='RHSText' class='col-md-pull-4 col-xs-pull-3 rght-PI RHSText text-center myidea-lebal PDL-sm-left'><p> <span class='tagideatxt'>Ideas tagged</span>:<b>" + TotalIdeasTagged + "</b> </p> <p><span class='tagideatxt'>Ideas funded</span> :<b>" + TotalIdeasFunded + "</b> </p> <p><span class='tagideatxt'>Investment</span>:<b>" + TotalFundings + " </b></p><div style='margin-top:15px;' class='bttnComman bttnPurple' id=tag_" + ChallengeID + " onclick='TagChallenge(id)' data-dismiss='modal'> Tag <span class='leftTop'></span> <span class='rightTop'></span> <span class='rightBottom'></span> <span class='leftBottom'></span> </div> </div> </div>"; PopupStart = "<div style='background: #fff;' class='popupBigBox'> <div class='overflowHidden'> <button type='button' class='close' data-dismiss='modal'> <img src='/group/thinkbox/Style Library/Images/close_btn.png' /></button></div> <div class='dividerLine'> </div> <div class='popupSmBoxContent overflowHidden text-left popup-scroll-height'>"; PopupEnd = "</div> </div>"; PopupText = PopupStart + body + PopupEnd; }); if (!PopupText || PopupText === 'undefined') { PopupText = "<div class='popupBigBox'> <div class='overflowHidden'> <button type='button' class='close' data-dismiss='modal'> <img src='/group/thinkbox/Style Library/Images/close_btn.png' /></button></div> <div class='dividerLine'> </div> <div class='popupSmBoxContent overflowHidden text-left popup-scroll-height'>No challenges available to tag.</div></div>"; } $("#MainModalBody").append(PopupText); $("#myModal").modal();}
+function TagChallenge(ChallengeID) { var challengeID = ChallengeID.split('_')[1]; var ChallengeTitle = getChallengeName(challengeID); $("#OpenChallengeLink").hide(); $("#TagChallengeLink").show(); $("#TagChallengeLinkID").append(challengeID); $("#TagChallengeTitle").empty(); $("#TagChallengeTitle").append(ChallengeTitle); }    
+function checkDr() { var reportingManager = ""; var userEmail = $().SPServices.SPGetCurrentUser({ fieldName: "Email", debug: false }); var query = "<Query><Where><Eq><FieldRef Name='EmployeeEmail' /><Value Type='Text'>" + userEmail + "</Value></Eq></Where></Query>"; $().SPServices({ operation: "GetListItems", async: false, listName: "Direct Reportees", CAMLViewFields: "<ViewFields><FieldRef Name='ReportingtoEmail' /></ViewFields>", CAMLQuery: query, completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { reportingManager = $(this).attr("ows_ReportingtoEmail");}); }});return reportingManager; }    
+function getChallengeName(id) { var ChallengeName; var query = "<Query><Where><Eq><FieldRef Name='ID' /><Value Type='Number'>" + id + "</Value></Eq></Where></Query>"; $().SPServices({ operation: "GetListItems", async: false, listName: "Challenges", CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='Description' /></ViewFields>", CAMLQuery: query, completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var ChallengeID = $(this).attr("ows_ID"); ChallengeName = $(this).attr("ows_Title"); });}}); return ChallengeName;};
+function GetLeaderInfo(ChallengeId) { var Author; var ImageUrl; $().SPServices({ operation: "GetListItems", async: false, listName: "Challenges", CAMLViewFields: "<ViewFields><FieldRef Name='Author' /></ViewFields>", CAMLQuery: "<Query><Where><Eq><FieldRef Name='ID' /><Value Type='Number'>" + ChallengeId + "</Value></Eq></Where></Query>", completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var CreatedBy = ($(this).attr("ows_Author")); var arrCreatedBy = CreatedBy.split('#'); var arrCreatedByForID = CreatedBy.split(';'); Author = arrCreatedBy[1]; var AuthorUserID = arrCreatedByForID[0]; ImageUrl = LeaderImageUrl(AuthorUserID); }); } }); return [Author, ImageUrl];}
+function LeaderImageUrl(AuthorUserID) { var ImageUrl; $().SPServices({ operation: "GetListItems", async: false, listName: "Leaders", CAMLViewFields: "<ViewFields><FieldRef Name='EncodedAbsUrl'/></ViewFields>", CAMLQuery: "<Query><Where><Eq><FieldRef Name='LeaderName' LookupId='True' /><Value Type='Integer'>" + AuthorUserID + "</Value></Eq></Where></Query>", CAMLRowLimit: 1, completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { ImageUrl = ($(this).attr("ows_EncodedAbsUrl")); }); }}); return ImageUrl;}
+function ExpiresInDays(ChallengeId) { var now = new Date(); var curr_date = now.getDate(); var curr_month = now.getMonth() + 1; var curr_year = now.getFullYear(); var startDate = curr_date + "/" + curr_month + "/" + curr_year; var Created; var challengeValidity = 180; var expirydue; $().SPServices({ operation: "GetListItems", async: false, listName: "Challenges", CAMLViewFields: "<ViewFields><FieldRef Name='ID' /></ViewFields>", CAMLQuery: "<Query><Where><Eq><FieldRef Name='ID' /><Value Type='Number'>" + ChallengeId + "</Value></Eq></Where></Query>", completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { Created = ($(this).attr("ows_Created")); var date1 = new Date(Created); var date2 = new Date(startDate); var timeDiff = Math.abs(date2.getTime() - date1.getTime()); var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); expirydue = Math.ceil(challengeValidity - diffDays); });}}); return expirydue;}    
+function IdeasTaggd(ChallengeId) { var itemCountIdeasTagged = 0; itemCountIdeasTagged += parseInt(IdeasTaggdList(ChallengeId)); itemCountIdeasTagged += parseInt(IdeasTaggdList(ChallengeId)); itemCountIdeasTagged += parseInt(IdeasTaggdList(ChallengeId)); itemCountIdeasTagged += parseInt(IdeasTaggdList(ChallengeId)); return itemCountIdeasTagged; }   
+function IdeasTaggdList(ChallengeId) {var listName = "V-Ideas"; var itemCount = 0; $().SPServices({ operation: "GetListItems", async: false, listName: listName, CAMLViewFields: "<ViewFields><FieldRef Name='ChallengeID' /></ViewFields>", CAMLQuery: "<Query><Where><Eq><FieldRef Name='ChallengeID' /><Value Type='Integer'>" + ChallengeId + "</Value></Eq></Where></Query>", completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { itemCount = $(xData.responseXML.xml).find("rs\\:data, data").attr("ItemCount"); }); } }); return itemCount; }    
+function MoneyInvestedForChallengeD(ChallengeId) { var TotalSumFundings = 0; TotalSumFundings += parseInt(FetchMoneyInvestd(ChallengeId, "India")); TotalSumFundings += parseInt(FetchMoneyInvestd(ChallengeId, "Egypt")); TotalSumFundings += parseInt(FetchMoneyInvestd(ChallengeId, "Romania")); TotalSumFundings += parseInt(FetchMoneyInvestd(ChallengeId, "Budapest")); return TotalSumFundings; }    
+function FetchMoneyInvestd(ChallengeId, location) { var TotalSumFundings = 0; var listName = "V-Ideas"; $().SPServices({ operation: "GetListItems", async: false, listName: listName, CAMLViewFields: "<ViewFields><FieldRef Name='TotalFundings' /></ViewFields>", CAMLQuery: "<Query><Where><Eq><FieldRef Name='ChallengeID' /><Value Type='Integer'>" + ChallengeId + "</Value></Eq></Where></Query>", completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var TotalFundings = parseInt($(this).attr("ows_TotalFundings")); if (isNaN(TotalFundings)) { TotalFundings = 0;} else { TotalSumFundings = parseInt(TotalSumFundings) + parseInt(TotalFundings); }});}}); return TotalSumFundings;}    
+function IdeasFundd(ChallengeId) { var itemCountTotalFundings = 0; itemCountTotalFundings += parseInt(FetchIdeasFundd(ChallengeId, "India")); itemCountTotalFundings += parseInt(FetchIdeasFundd(ChallengeId, "Egypt")); itemCountTotalFundings += parseInt(FetchIdeasFundd(ChallengeId, "Romania")); itemCountTotalFundings += parseInt(FetchIdeasFundd(ChallengeId, "Budapest")); return itemCountTotalFundings; }    
+function FetchIdeasFundd(ChallengeId, location) { var listname = "V-Ideas"; var itemCountTotalFundings = 0; $().SPServices({ operation: "GetListItems", async: false, listName: listname, CAMLViewFields: "<ViewFields><FieldRef Name='ChallengeID' /></ViewFields>", CAMLQuery: "<Query><Where><And><IsNotNull><FieldRef Name='TotalFundings' /></IsNotNull><Eq><FieldRef Name='ChallengeID' /><Value Type='Integer'>" + ChallengeId + "</Value></Eq></And></Where></Query>", completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { itemCountTotalFundings = $(xData.responseXML.xml).find("rs\\:data, data").attr("ItemCount");});}});return itemCountTotalFundings;}    
+function AddIdea(IdeaStatus, Title, IdeaDesc, EstimatedHours, EstimatedCost, Currency, TagChallengeID, IdeaServiceLine, IdeaService, raisedBy, vertical, listname, IdeaLocation, crossfunction, Ideatype, IdeatorLocation) {
+    var manager = $().SPServices.SPGetCurrentUser({
+
+        fieldName: "Manager"
+
+    });
+    var thisUserName = $().SPServices.SPGetCurrentUser({
+        fieldName: "FirstName",
+        debug: false
+    });
+
+    // Check the values and assign '' if the values are invalid. We don't want undefined and null in the list.
+    var buyer1 = buyersPortfolio[0];
+    if (!buyer1 || buyer1 === 'undefined' || buyer1 === null) {
+        buyer1 = '';
+    }
+
+    var buyer2 = buyersPortfolio[1];
+    if (!buyer2 || buyer2 === 'undefined' || buyer2 === null) {
+        buyer2 = '';
+    }
+
+    var buyer3 = buyersPortfolio[2];
+    if (!buyer3 || buyer3 === 'undefined' || buyer3 === null) {
+        buyer3 = '';
+    }
+
+    var portfolioServiceLine = buyersPortfolio[3];
+    if (!portfolioServiceLine || portfolioServiceLine === 'undefined' || portfolioServiceLine === null) {
+        portfolioServiceLine = '';
+    }
+    var pushData = "";
+    if (Ideatype != "Own function")
+    { pushData = vertical; vertical = crossfunction; }
+    $().SPServices({
+        operation: "UpdateListItems",
+        async: false, batchCmd: "New",
+        listName: listname,
+        valuepairs: [["Title", Title], ["IdeaStatus", IdeaStatus], ["IdeaDescription", IdeaDesc], ["EstimatedBenefitsInHours", EstimatedHours], ["EstimatedBenefitsInCost", EstimatedCost], ["EstimatedBenefitsCostCurrency", Currency], ["ChallengeID", TagChallengeID], ["IdeaServiceLine", IdeaServiceLine], ["IdeaService", IdeaService], ["RaisedBy", raisedBy], ["VerticalName", vertical], ["ManagerID", manager], ["IdeaLocation", IdeaLocation], ["VIdeaType", Ideatype], ["Location", IdeatorLocation], ["Buyer1", buyer1], ["Buyer2", buyer2], ["Buyer3", buyer3], ["PortfolioServiceLine", portfolioServiceLine]], completefunc: function (xData, Status) { $("#AlertModalBody").empty(); $("#AlertModalFooter").empty(); var body = "<div class='popupSmBox'> <span class='sorryCloseIcon_LT'></span><span class='sorryCloseIcon_RT'></span> <span class='sorryCloseIcon_RB'></span><span class='sorryCloseIcon_LB'></span><div class='overflowHidden'><button type='button' class='close' data-dismiss='modal'><img src='/Group/Thinkbox/Style%20Library/Images/close_btn.png' /></button></div><div class='dividerLine'></div> <div class='popupSmBoxContent'><p><p>Congratulations " + thisUserName + "!</p><p>Your Idea has been posted successfully.</p></p><div type='button' class='bttnComman bttnPurple bttnMarginSD' id='Button1'  onClick='RedirectToMyIdea()' data-dismiss='modal'>Show My Idea<span class='leftTop'></span> <span class='rightTop'></span> <span class='rightBottom'></span> <span class='leftBottom'></span></div></div>"; $("#AlertModalBody").append(body); $('.popupSmBox').parent().parent().parent().css('width', '600px'); $("#AlertModal").modal(); }
+
+    });
+}
+function RedirectToMyIdea() { $('#submit').css('opacity', '1.0'); window.location.href = $().SPServices.SPGetCurrentSite() + "/Pages/myideaDetails.aspx?TabName=My Idea"; $('.nav-pills a[href="#MyIdea"]').tab('show'); $("#sortOtherIdeas").hide(); $("#sortmyIdeas").show(); document.getElementById("IdeaName").value = "Enter Title"; document.getElementById("IdeaDesc").value = "Enter Description"; document.getElementById("EstimatedHours").value = "Number of hours saved per month"; document.getElementById("EstimatedCost").value = "Estimated cost benefits"; document.getElementById("IdeaServiceLine").value = ""; document.getElementById("IdeaService").value = ""; $('#IdeaServiceLine').get(0).selectedIndex = 0; $('#IdeaService').get(0).selectedIndex = 0; $('#IdeaLocation').get(0).selectedIndex = 0; $('#Currency').get(0).selectedIndex = 0; $("#TagChallengeLinkID").empty(); $("#TagChallengeLink").hide(); $("#OpenChallengeLink").show(); }
+function Confirm() { $("#AlertModalBody").empty(); $("#AlertModalFooter").empty(); var body = "<div class='popupSmBox'> <span class='sorryCloseIcon_LT'></span><span class='sorryCloseIcon_RT'></span> <span class='sorryCloseIcon_RB'></span><span class='sorryCloseIcon_LB'></span><div class='overflowHidden'><button type='button' class='close' data-dismiss='modal'><img src='/Group/Thinkbox/Style%20Library/Images/close_btn.png' /></button></div><div class='dividerLine'></div> <div class='popupSmBoxContent'><p>Do you want to remove this challenge?</p><div type='button' class='bttnComman bttnPurple bttnMarginSD' id='Yes'  onClick='ConfirmModal(id)' data-dismiss='modal'>Yes<span class='leftTop'></span> <span class='rightTop'></span> <span class='rightBottom'></span> <span class='leftBottom'></span></div><div type='button' class='bttnComman bttnPurple' id='No'  onClick='ConfirmModal(id)' data-dismiss='modal'>No<span class='leftTop'></span> <span class='rightTop'></span> <span class='rightBottom'></span> <span class='leftBottom'></span></div></div></div>"; $("#AlertModalBody").append(body); $('.popupSmBox').parent().parent().parent().css('width', '600px'); $("#AlertModal").modal();}
+function ConfirmModal(result) {if (result == "Yes") { $("#TagChallengeLinkID").empty(); $("#TagChallengeLink").hide(); $("#OpenChallengeLink").show(); }}
+function fetchDatafromConfigList(key) { var query = "<Query><Where><Eq><FieldRef Name='Key' /><Value Type='Text'>" + key + "</Value></Eq></Where></Query>"; $().SPServices({ operation: "GetListItems", async: false, listName: "Configuration List", CAMLViewFields: "<ViewFields><FieldRef Name='Key' /><FieldRef Name='Value' /></ViewFields>", CAMLQuery: query, completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { query = $(this).attr("ows_Value"); });}}); return query;}
+function validate(evt) { var theEvent = evt || window.event; var key = theEvent.keyCode || theEvent.which; key = String.fromCharCode(key); var regex = /[0-9]|\./; if (!regex.test(key)) { theEvent.returnValue = false; if (theEvent.preventDefault) theEvent.preventDefault(); }}
+function validateAllFields() { $("#valIdeaTitle").hide(); $("#valIdeaDescription").hide(); $("#valIdeaDescriptionLength").hide(); $("#valCurrency").hide(); $("#valEstimatedHoursCost").hide(); $("#valIdeaServiceLine").hide(); $("#valIdeaService").hide(); $("#valIdeaLocation").hide(); var IdeaTitle = $("#IdeaName").val(); if (IdeaTitle == 'Enter Title' || IdeaTitle == '') { $("#IdeaName").focus(); $("#valIdeaTitle").show(); return false;} var IdeaDesc = $("#IdeaDesc").val(); if (IdeaDesc == 'Enter Description' || IdeaDesc == '') { $("#IdeaDesc").focus(); $("#valIdeaDescription").show(); return false; } if (IdeaDesc.length > 600) { $("#IdeaDesc").focus(); $("#valIdeaDescriptionLength").show(); return false; } var EstimatedHours = $("#EstimatedHours").val(); var EstimatedCostBenefits = $("#EstimatedCost").val(); var currency = $("#Currency").val(); if ((EstimatedHours == 'Number of hours saved per month' || EstimatedHours == '') && (EstimatedCostBenefits == 'Estimated cost benefits' || (parseInt(EstimatedCostBenefits) == 0) || currency == 'SEL')) {if (EstimatedCostBenefits != 'Estimated cost benefits') { if (currency == 'SEL') { $("#valCurrency").show(); }} else { $("#valEstimatedHoursCost").show(); } return false; } if (!($("#CrossFunctionVertical").val())) { var IdeaServiceLine = $("#IdeaServiceLine").val(); if (IdeaServiceLine == 'Line') { $("#IdeaServiceLine").focus(); $("#valIdeaServiceLine").show(); return false;} if ((thinkBox.userLeaderType !== "Global Leader") || (thinkBox.userLeaderType !== "Central Leader") || (thinkBox.userLeaderType !== "Functional Leader")) { var IdeaService = $("#IdeaService").val(); if (IdeaService == '' || IdeaService == 'Service') { $("#IdeaService").focus(); $("#valIdeaService").show(); return false; } var IdeaLocation = $("#IdeaLocation").val(); if (IdeaLocation == 'Location') { $("#IdeaLocation").focus(); $("#valIdeaLocation").show(); return false; } }} return true;}
+function getListDataDetails(locatio) { try { $().SPServices({ operation: "GetListItems", async: false, listName: "FlashNews", CAMLViewFields: "<ViewFields><FieldRef Name='NewsHeading' /><FieldRef Name='EncodedAbsUrl' /><FieldRef Name='Description' /><FieldRef Name='Title' /></ViewFields>", CAMLQuery: "<Query><Where><Eq><FieldRef Name='NewsLocation' /><Value Type='Choice'>" + locatio + "</Value></Eq></Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>", CAMLRowLimit: 4, completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var Heading = ($(this).attr("ows_NewsHeading")); var title = ($(this).attr("ows_Title")); var description = ($(this).attr("ows_Description")); var ImageUrl = ($(this).attr("ows_EncodedAbsUrl")); if (counter == 0) { $("#Img1").attr("src", ImageUrl); } if (counter == 1) { $("#Img2").attr("src", ImageUrl); } if (counter == 2) { $("#Img3").attr("src", ImageUrl); } if (counter == 3) { $("#Img4").attr("src", ImageUrl); } counter++; }); } }); } catch (e) { return ''; } }    
+function GetIdeasByIdIdeator(IdeaID) { var ChallengeID = 0; var getText; $("#ideaContent").empty(); $().SPServices({ operation: "GetListItems", async: false, listName: "V-Ideas", CAMLQueryOptions: "<QueryOptions><ExpandUserField>True</ExpandUserField></QueryOptions>", CAMLQuery: "<Query><Where><Eq><FieldRef Name='ID' /><Value Type='Number'>" + IdeaID + "</Value></Eq></Where></Query>", CAMLViewFields: "<ViewFields><FieldRef Name='IdeaNumber' /><FieldRef Name='Title' /><FieldRef Name='ChallengeID' /><FieldRef Name='Author' /><FieldRef Name='TotalFundings' /><FieldRef Name='IdeaDescription' /><FieldRef Name='EstimatedBenefitsInHours' /></ViewFields>", completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var IdeaNumber = $(this).attr("ows_IdeaNumber"); IdeaNumber = IdeaNumber.split('#')[1]; var IdeaTitle = $(this).attr("ows_Title"); var IdeaDesc = $(this).attr("ows_IdeaDescription"); var IdeaId = $(this).attr("ows_ID"); ChallengeID = Math.round($(this).attr("ows_ChallengeID")); var IdeaAuth = $(this).attr("ows_Author"); var IdeaCreator = (IdeaAuth.split('#')[5]).replace(/,,/g, ","); var IdeaFundings = Math.round($(this).attr("ows_TotalFundings")); var IdeaBenefits = Math.round($(this).attr("ows_EstimatedBenefitsInHours")); getText = "<div class='popup'><div class='header'></div><div class='popup-heading'> <button data-dismiss='modal'> <img src='/group/thinkbox/Style Library/Images/close_btn.png'/> </button> </div> <div class='col-md-6 col-xs-6 PNONE'> <h1>Idea-" + IdeaId + ":IdeaTitle </h1> </div><div  class='col-md-6 col-xs-6 text-right font16'>Total V Coins Invested - " + IdeaFundings + "<p>Estimated Benefits-" + IdeaBenefits + " hrs<br> Actual Benefits Saved -" + IdeaBenefits + " hrs </p></div> <div class='popup-details'><b>Description:</b>" + IdeaDesc + "  </div><div class='btn-invest'></div></div>"; });}}); var getText1 = GetChallengebyID(ChallengeID, "idea"); getText = getText + getText1; $("#ideaContent").append(getText); $("#ideaModal").modal();}
+function getListDataForImplement(location, verticalName) { try { var implementedCount = 0; var listname = "V-Ideas"; var query = "<Query><Where><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + location + "</Value></Eq><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + verticalName + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Completed</Value></Eq></And></And></Where></Query>"; $().SPServices({ operation: "GetListItems", async: false, listName: listname, CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='IdeaDescription' /><FieldRef Name='IdeaNumber' /></ViewFields>", CAMLQuery: query, CAMLRowLimit: 2, completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var title = ($(this).attr("ows_Title")); var ID = ($(this).attr("ows_ID")); var IdeaNumber = ($(this).attr("ows_IdeaNumber")); if (IdeaNumber.indexOf("#") >= 0) { IdeaNumber = IdeaNumber.split('#')[1]; } var IdeaDescription = ($(this).attr("ows_IdeaDescription")); if (IdeaDescription.length > 15) { var after = $('<div />').html(IdeaDescription).find('span').contents().unwrap().end().end().html(); after = $('<div />').html(after).find('p').contents().unwrap().end().end().html(); after = $('<div />').html(after).find('div').contents().unwrap().end().end().html(); IdeaDescription = after.substring(0, 15); IdeaDescription = IdeaDescription + '...'; } var passideaID = "myidea" + IdeaNumber; var linkUrl = title; if (linkUrl.length > 15) { linkUrl = linkUrl.substring(0, 15); linkUrl = linkUrl + '...';} var link = "<a href='#' id=" + passideaID + " onclick='GetIdeasByIdIdeator(\"" + ID + "\")' >" + linkUrl + "</a>"; if (implementedCount == 0) { $("#lblIdeaNumber1").html(IdeaNumber); $("#lblIdeaTitle1").html(link); $("#lblIdeaDescription1").html(IdeaDescription); } if (implementedCount == 1) { $("#lblIdeaNumber2").html(IdeaNumber); $("#lblIdeaTitle2").html(link); $("#lblIdeaDescription2").html(IdeaDescription); } implementedCount++; }); } }); } catch (e) { return '';}}    
+function GetMonthName(monthNumber) { var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; return months[monthNumber - 1]; };
+function ShowChallengeDetails(challengeID) { var getText = ""; $("#myModalChallenge").empty(); var query = "<Query><Where><Eq><FieldRef Name='ID'/><Value Type='Number'>" + challengeID + "</Value></Eq></Where></Query>"; $().SPServices({ operation: "GetListItems", async: false, listName: "Challenges", CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='Description' /></ViewFields>", CAMLQuery: query, completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var ChallengeID = $(this).attr("ows_ID"); var ChallengeTitle = $(this).attr("ows_Title"); var ChallengeDesc = $(this).attr("ows_Description"); getText = "<div class='popupBigBox' style='background:#fff'><div class='dividerLine'> </div> <div class='popupSmBoxContent text-left'> <p><b> Challenge " + ChallengeID + ": " + ChallengeTitle + " </b></p> <p>" + ChallengeDesc + "</p> </div> <div class='popupBottmBttnDivider'><div type='button' class='bttnComman bttnPurple'   data-dismiss='modal'>Ok<span class='leftTop'></span> <span class='rightTop'></span><span class='rightBottom'> </span><span class='leftBottom'></span></div></div> </div>"; }); } }); $("#myModalChallenge").append(getText); $("#myModalChallenge").modal(); }
+function createCamlQuery(role, location, vertical, ideaType) { var camlQuery = "<Query><Where>"; camlQuery += "<And><Eq><FieldRef Name='Title' /><Value Type='Text'>" + ideaType + "</Value></Eq><And><Eq><FieldRef Name='Function' /><Value Type='Text'>" + vertical + "</Value></Eq><Eq><FieldRef Name='Location' /><Value Type='Text'>" + location + "</Value></Eq></And></And>"; camlQuery += "</Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>"; return camlQuery; }
+function getLeaderImageUrl(camlQuery) { var ImageUrl; var arrImageUrl = []; $().SPServices({ operation: "GetListItems", async: false, listName: "Challenges", CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='ID' /><FieldRef Name='Description' /><FieldRef Name='Author' /><FieldRef Name='PictureURL' /></ViewFields>", CAMLRowLimit: 2, CAMLQuery: camlQuery, completefunc: function (xData, Status) { $(xData.responseXML).SPFilterNode("z:row").each(function () { var CreatedBy = ($(this).attr("ows_Author"));var arrCreatedBy = CreatedBy.split('#'); var leaderName = arrCreatedBy[1]; leaderName = leaderName.split('Vodafone')[0];var title = $(this).attr("ows_Title"); title = title.substring(0, 35) + ' ...'; var objImageUrl = { "ImageUrl": $(this).attr("ows_PictureURL"), "LeaderName": leaderName, "Title": title, "Description": $(this).attr("ows_Description"), "ChallengeID": $(this).attr("ows_ID") }; arrImageUrl.push(objImageUrl); }); } }); var newChHtml = '<div class="section br-none box3"><div class="title">New Challenges</div><div class="section-inner">'; for (var i = 0; i < arrImageUrl.length; i++) { newChHtml += '<div class="media"><div class="media-left"><div class="profile-pic-home"></div>'; newChHtml += '<a href="#"><img class="media-object profile-radius" id="ImgAuthor' + i + '" src="' + arrImageUrl[i].ImageUrl + '" style="height: 50px; width: 50px;"></a></div>'; newChHtml += '<div class="media-body"><h4 class="media-heading"><label id="ChallengeAuthor' + i + '" class="MRBNONE">"' + arrImageUrl[i].LeaderName + '"</label></h4>'; newChHtml += '<label id="ChallengeTitle1" style="font-weight: normal"><a href="#" id="myChallenge163" onclick="ShowChallengeDetails(' + arrImageUrl[i].ChallengeID + ')">"' + arrImageUrl[i].Title + '"</label>'; newChHtml += '</div></div>'; } newChHtml += "</div></div>"; $("#topdiv").html(newChHtml); }    
+function getCountChallenge(ChallengeMonthYear, ChallengeStatus) { var query = "<Query><Where>"; ItemCount = 0; var camlQuery = ""; if (ChallengeStatus == "ChallengesPosted") { if (role == "Ideator") { if (!(drs) && (flagGBand == false)) { query += fetchDatafromConfigList("None"); query = query.replace(/locatio/g, leaderLocation); query = query.replace(/vertical/g, leaderVertical); } else if (!(drs) && (flagGBand == true)) { query += fetchDatafromConfigList("Only GBand"); query = query.replace(/locatio/g, leaderLocation); query = query.replace(/vertical/g, leaderVertical); } else if ((drs) && (flagGBand == true)) { query += fetchDatafromConfigList("DR and GBand"); query = query.replace(/locatio/g, leaderLocation); query = query.replace(/vertical/g, leaderVertical); query = query.replace(/drs/g, drs); } else if ((drs) && (flagGBand == false)) { query += fetchDatafromConfigList("Only DR"); query = query.replace(/locatio/g, leaderLocation); query = query.replace(/vertical/g, leaderVertical); query = query.replace(/drs/g, drs); } } query += "</Where></Query>"; $().SPServices({ operation: "GetListItems", async: false, listName: "Challenges", CAMLQuery: query, CAMLViewFields: "<ViewFields><FieldRef Name='Title' /></ViewFields>", completefunc: function (xData, Status) { ItemCount = $(xData.responseXML).SPFilterNode("rs:data").attr("ItemCount"); } }); } else { query += "<And><Eq><FieldRef Name='ChallengeMonthYear' /><Value Type='Text'>" + ChallengeMonthYear + "</Value></Eq>"; if (role == "Ideator") {if (!(drs) && (flagGBand == false)) { query += fetchDatafromConfigList("None"); query = query.replace(/locatio/g, leaderLocation); query = query.replace(/vertical/g, leaderVertical); } else if (!(drs) && (flagGBand == true)) { query += fetchDatafromConfigList("Only GBand"); query = query.replace(/locatio/g, leaderLocation); query = query.replace(/vertical/g, leaderVertical); } else if ((drs) && (flagGBand == true)) { query += fetchDatafromConfigList("DR and GBand"); query = query.replace(/locatio/g, leaderLocation); query = query.replace(/vertical/g, leaderVertical); query = query.replace(/drs/g, drs); } else if ((drs) && (flagGBand == false)) { query += fetchDatafromConfigList("Only DR"); query = query.replace(/locatio/g, leaderLocation); query = query.replace(/vertical/g, leaderVertical); query = query.replace(/drs/g, drs);} } query += "</And></Where></Query>"; $().SPServices({ operation: "GetListItems", async: false, listName: "Challenges", CAMLViewFields: "<ViewFields><FieldRef Name='Title' /></ViewFields>", CAMLQuery: query, completefunc: function (xData, Status) { ItemCount = $(xData.responseXML).SPFilterNode("rs:data").attr("ItemCount"); } });}return ItemCount;};
+</script>
+
+<head>
+    <style type="text/css">
+        .carousel {
+            background: #2f4357;
+            margin-top: 20px;
+        }
+
+            .carousel .item img {
+                margin: 0 auto; /* Align slide image horizontally center */
+            }
+
+        .bs-example {
+            margin: 20px;
+        }
+    </style>
+    <title>IdeatorHome</title>
+</head>
+
+<div class="custom-wrapper">
+
+
+    <div class="banner">
+        <span class="top-left"></span><span class="top-right"></span><span class="bottom-left"></span><span class="bottom-right"></span>
+        <div class="bs-example">
+            <div id="myCarousel" class="carousel slide slide-fix" data-ride="carousel">
+                <!-- Carousel indicators -->
+                <ol class="carousel-indicators">
+                    <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                    <li data-target="#myCarousel" data-slide-to="1"></li>
+                    <li data-target="#myCarousel" data-slide-to="2"></li>
+                    <li data-target="#myCarousel" data-slide-to="3"></li>
+                </ol>
+                <!-- Wrapper for carousel items -->
+                <div class="carousel-inner">
+                    <div class="item active">
+                        <img src="" alt="First Slide" id="Img1" style="width: 688px; height: 239px;">
+                        <label id="IdeaHeading1" class="sld-heading">
+                        </label>
+                        <label id="IdeaTitle1" class="sld-title">
+                        </label>
+                        <label id="IdeaDescription1" class="sld-des">
+                        </label>
+                    </div>
+                    <div class="item">
+                        <img src="" alt="Second Slide" id="Img2" style="width: 688px; height: 239px;">
+                        <label id="IdeaHeading2" class="sld-heading">
+                        </label>
+                        <label id="IdeaTitle2" class="sld-title">
+                        </label>
+                        <label id="IdeaDescription2" class="sld-des">
+                        </label>
+                    </div>
+                    <div class="item">
+                        <img src="" alt="Third Slide" id="Img3" style="width: 688px; height: 239px;">
+                        <label id="IdeaHeading3" class="sld-heading">
+                        </label>
+                        <label id="IdeaTitle3" class="sld-title">
+                        </label>
+                        <label id="IdeaDescription3" class="sld-des">
+                        </label>
+                    </div>
+                    <div class="item">
+                        <img src="" alt="Fourth Slide" id="Img4" style="width: 688px; height: 239px;">
+                        <label id="IdeaHeading4" class="sld-heading">
+                        </label>
+                        <label id="IdeaTitle4" class="sld-title">
+                        </label>
+                        <label id="IdeaDescription4" class="sld-des">
+                        </label>
+                    </div>
+                </div>
+                <!-- Carousel controls 
+            <a class="carousel-control left" href="#myCarousel"><span class="glyphicon glyphicon-chevron-left">
+            </span></a><a class="carousel-control right" href="#myCarousel"><span
+                class="glyphicon glyphicon-chevron-right"></span></a>-->
+            </div>
+        </div>
+    </div>
+    <div class="component">
+        <span class="top-left"></span><span class="top-right"></span>
+        <div id="Box1" class="section">
+            <div class="title">
+                <span class="pull-left"></span>
+				<span id="MonthlyStatistics" class="figure pull-left"></span>
+				<span class="figure pull-pull-right"> Month To Date</span> 
+				
+            </div>
+            <div class="section-inner">
+                <div class="topsection">
+                    <div class="left-box">
+                        <span id="IdeasPostedCount" class="figure"></span><span style="padding: 0px 15px;" class="post-idea">Ideas Posted
+                        </span>
+                    </div>
+                    <div class="right-box">
+                        <span id="NewIdeasCount" class="figure"></span><span style="padding: 0px 20px;" class="post-idea">New Ideas </span>
+                    </div>
+                    <div class="bottom-left-box">
+                        <span id="ChallengesPostedCount" class="figure"></span><span class="post-idea">Challenges
+                        Posted </span>
+                    </div>
+                    <div class="bottom-right-box">
+                        <span id="NewChallengesCount" class="figure"></span><span class="post-idea">New Challenges
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section box2">
+            <div class="title">
+                Implemented ideas
+            </div>
+            <div class="section-inner dash-idea ">
+                <div class="media">
+                    <div class="media-body invest-col br-bottom br-height">
+                        <div class="dash-title">
+                            <label id="lblIdeaNumber1" class="color-red txt-decoration">
+                            </label>
+                            <div class="dash-name black-color">
+                                <label id="lblIdeaTitle1">
+                                </label>
+                            </div>
+                            <p>
+                                <label id="lblIdeaDescription1" class="font-weight black-color">
+                                </label>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="media">
+                        <div class="media-body">
+                            <div class="dash-title">
+                                <label id="lblIdeaNumber2" class="color-red txt-decoration">
+                                </label>
+                                <div class="dash-name black-color">
+                                    <label id="lblIdeaTitle2">
+                                    </label>
+                                </div>
+                                <p>
+                                    <label id="lblIdeaDescription2" class="font-weight black-color">
+                                    </label>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section br-none box3">
+            <div class="title">
+                <!-- New Challenges -->
+            </div>
+            <div id="topdiv">
+            </div>
+            <!--<div class="section-inner">
+            <div class="media">
+                <div class="media-left">
+                    <div class="profile-pic-home">
+                        <img src="https://workspace2.vodafone.com/Group/V-Ideas/VIdeaImages/profile_pic.png" />
+                    </div>
+                    <a href="#">
+                        <img class="media-object" id="ImgAuthor1" src="" style="height: 50px; width: 50px;">
+                    </a>
+                </div>
+                <div class="media-body">
+                    <h4 class="media-heading">
+                        <label id="ChallengeAuthor1" class="MRBNONE">
+                        </label>
+                    </h4>
+                    <label id="ChallengeTitle1" style="font-weight: normal">
+                    </label>
+                </div>
+            </div>
+            <div class="media">
+                <div class="media-left">
+                    <div class="profile-pic-home">
+                        <img src="https://workspace2.vodafone.com/Group/V-Ideas/VIdeaImages/profile_pic.png" />
+                    </div>
+                    <a href="#">
+                        <img class="media-object" id="ImgAuthor2" src="" style="height: 50px; width: 50px;" />
+                    </a>
+                </div>
+                <div class="media-body">
+                    <h4 class="media-heading">
+                        <label id="ChallengeAuthor2" class="MRBNONE">
+                        </label>
+                    </h4>
+                    <label id="ChallengeTitle2" style="font-weight: normal">
+                    </label>
+                </div>
+            </div>
+        </div>-->
+        </div>
+        <span class="bottom-left"></span><span class="bottom-right"></span>
+    </div>
+
+</div>
+<!------End  component-------->
+<!--------------POst an Idea Slider----------------->
+<div id="demo" class="container sidebar sidebar-left" style="left: -85%" data-status="closed">
+    <div class="tab-content">
+
+        <!--Code added by Suman -->
+
+        <div id="PostIdea" class="tab-pane fade in active">
+            <!-- Modal -->
+            <div id="PIdea" class="pi-wrapper ">
+                <!-- <h2>
+                    Post Idea</h2>-->
+                <div class="col-xs-12 col-md-12 index PNONE">
+                    <label for="Title" class="postIdeaTitle">
+                        Title</label>
+                    <!-- <input  maxlength="200" class="form-control" type="text" /> -->
+                    <div class="inputNew width100per">
+                        <input id="IdeaName" name="txtTitle" maxlength="200" value="Enter Title" onfocus="if(this.value=='Enter Title')this.value='';"
+                            onblur="if(this.value=='')this.value='Enter Title';" type="text" class="width100per" />
+                        <b id="valIdeaTitle" style="color: red; display: none">Please Enter Idea Title</b>
+                    </div>
+                </div>
+                <div class="char-count" id="countTitle">
+                    200 characters left
+                </div>
+                <div class="col-xs-12 col-md-12 index  PNONE">
+                    <label for="des" class="postIdeaTitle">
+                        Description</label>
+                    <div class="inputNew width100per height100">
+                        <textarea class="width100per height100per form-control" id="IdeaDesc" class="" rows="3"
+                            cols="50" onfocus="if(this.value=='Enter Description')this.value='';" onblur="if(this.value=='')this.value='Enter Description';">Enter Description</textarea>
+                        <b id="valIdeaDescription" style="color: red; display: none">Please Enter Idea Description</b>
+                        <b id="valIdeaDescriptionLength" style="color: red; display: none">Idea Description should not be greater than 600 characters</b>
+                    </div>
+                    <div class="char-count" id="countdes">
+                        600 characters left
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-12 index  PNONE">
+                    <label for="des" class="postIdeaTitle">
+                        Estimated Benefits</label>
+                    <b id="valEstimatedHoursCost" style="color: red; display: none">Please Enter Estimated Hours or Estimated cost benefits</b>
+                </div>
+                <div class='row'>
+                    <div class='col-md-4 MNONE paddingRight'>
+                        <label for="des" class="postIdeaTitle">
+                            Hours</label>
+                        <div class="inputNew width100per">
+                            <input style="line-height:17px;" id="EstimatedHours" maxlength="4" value="Number of hours saved per month"
+                                onfocus="if(this.value=='Number of hours saved per month')this.value='';" onblur="if(this.value=='')this.value='Number of hours saved per month';"
+                                class="form-control   height29Input" type="text" onkeypress='validate(event)' />
+                        </div>
+                    </div>
+                    <div class='col-md-1 font-14 PNONE andORTxt text-center'>
+                        <label for="des" class="postIdeaTitle blankLabel">
+                            blank</label><div>
+                                and/or
+                            </div>
+                    </div>
+                    <div class='col-md-3 PNONE marginRight5 displayInlineBlock'>
+                        <label class="postIdeaTitle">
+                            Cost</label><div class='FormInputBox width100per height29Input'>
+                                <select id="Currency" class="form-control">
+                                    <option value="SEL">Select Currency</option>
+                                    <option value="INR">INR</option>
+                                    <option value="EGP">EGP</option>
+                                    <!-- <option value="RON">RON</option>-->
+                                    <option value="RON">EURO</option>
+                                    <option value="HUF">HUF</option>
+                                </select>
+                                <b id="valCurrency" style="color: red; display: none">Please select currency</b>
+                            </div>
+                    </div>
+                    <div class='col-md-3'>
+                        <label for="des" class="postIdeaTitle blankLabel">
+                            blank
+                        </label>
+                        <div class="inputNew width100per">
+                            <input style="line-height:17px;" id="EstimatedCost" maxlength="10" class="form-control   height29Input" value="Estimated cost benefits"
+                                onfocus="if(this.value=='Estimated cost benefits')this.value='';" onblur="if(this.value=='')this.value='Estimated cost benefits';"
+                                onkeypress='validate(event)' />
+                        </div>
+                    </div>
+                </div>
+                <div class='row' id="crossFunctionSelectionDiv">
+                    <div class="char-count blankLabel">
+                        blank
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-12 col-md-12 index marginTop">
+                            <div class="overflowHidden clear">
+                                <div style="margin-top: 8px;" class='col-md-3 PNONE marginRight5 displayInlineBlock'>
+
+                                    <span class="FormInputBox width100per height29Input outside-function">
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" value="Cross" id="chkCrossfunction"></label>
+                                    </span>
+                                    <label for="service line" class="postIdeaTitle">
+                                        Outside Function</label>
+                                </div>
+                                <div class='col-md-3 col-md-offset-1 PNONE marginRight5 displayInlineBlock' id="CrossFunctiondiv"
+                                    style="display: none">
+                                    <label for="service line" class="postIdeaTitle">
+                                    </label>
+                                    <div class='FormInputBox width100per height29Input'>
+                                        <select class="form-control" id="CrossFunctionVertical">
+                                            <option></option>
+                                        </select>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class='row'>
+                    <div class="char-count blankLabel">
+                        blank
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-12 col-md-12 index marginTop">
+                            <div class="overflowHidden clear">
+                                <div class='col-md-3 PNONE marginRight5 displayInlineBlock'>
+                                    <label for="service line" class="postIdeaTitle">
+                                        Service Line</label>
+                                    <div class="FormInputBox width100per height29Input">
+                                        <select class="form-control" id="IdeaServiceLine">
+                                            <option></option>
+                                        </select>
+                                    </div>
+                                    <b id="valIdeaServiceLine" style="color: red; display: none">Please Select Idea Service Line</b>
+                                </div>
+                                <div class='col-md-3 col-md-offset-1 PNONE marginRight5 displayInlineBlock'>
+                                    <label for="ser" class="postIdeaTitle">
+                                        Service</label>
+                                    <div class='FormInputBox width100per height29Input'>
+                                        <select class="form-control" id="IdeaService">
+                                            <option></option>
+                                        </select>
+                                    </div>
+                                    <b id="valIdeaService" style="color: red; display: none">Please Select Idea Service</b>
+                                </div>
+                                <div class='col-md-3 col-md-offset-1 PNONE marginRight5 displayInlineBlock'>
+                                    <label for="ser" class="postIdeaTitle">
+                                        Location</label>
+                                    <div class='FormInputBox width100per height29Input'>
+                                        <select class="form-control" id="IdeaLocation">
+                                            <option></option>
+                                        </select>
+                                    </div>
+                                    <b id="valIdeaLocation" style="color: red; display: none">Please Select Idea Location</b>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="OpenChallengeLink">
+                    <div class="char-count blankLabel">
+                        blank
+                    </div>
+                    <div class="col-xs-12 col-md-12 index marginTop">
+                        <label for="Idea" class="MNONE" style="padding-right: 5px">
+                            Want to tag this idea to leader's challenge? View
+                        </label>
+                        <a href="#" class='font-18 underline' onclick="AllChallenges();"><b>open challenges
+                        </b></a>
+                    </div>
+                </div>
+
+                <div class="row">
+                </div>
+                <div id="TagChallengeLink" class="form-group tagIdeaMsg">
+
+                    <label>
+                        Idea will be tagged to challenge:<span id="TagChallengeLinkID"></span> <span id="TagChallengeTitle"></span>
+                    </label>
+                    <button type="button" class="close" onclick="Confirm()">
+                        &times;</button>
+                </div>
+                <div class="row">
+                    <div id="submit" class="bttnComman bttnPurple  pull-right bttnMarginSD">
+                        Submit  
+                    </div>
+                    <div id="btnReset" class="bttnComman bttnPurple pull-right bttnMarginSD">
+                        Reset  
+                    </div>
+                    <input type="hidden" value="" id='hdnIdeaStatus' />
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="toggler">
+        <span class="bulb" style="display: block;"></span><span class="glyphicon glyphicon-chevron-left"
+            style="display: none"></span>
+    </div>
+
+
+    <!--Start Code Suman -->
+    <div style="overflow: hidden; top: 5%;" class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        &times;</button>
+                </div>
+                <div class="modal-body">
+                    <div style="min-height: auto; max-height: 500px; overflow-x: hidden;" id="MainModalBody">
+                    </div>
+                </div>
+                <div class="modal-footer" id="MainModalFooter" style="text-align: center">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="AlertModal" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        &times;</button>
+                </div>
+                <div class="modal-body" id="AlertModalBody">
+                </div>
+                <div class="modal-footer" id="AlertModalFooter" style="text-align: center">
+                </div>
+            </div>
+        </div>
+    </div>
+
+      <div class="modal fade" id="myModalChallenge" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    &times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="myTableChallenge">
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+</div><head><title>New Challenge</title></head>
+
+
+
+
+</div>
+<style>
+    .sidebar {
+        width: 1000px;
+    }
+</style>
+<!---------------End of Slider---------------------->
