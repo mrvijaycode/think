@@ -1,0 +1,2249 @@
+﻿<script type="text/javascript" src="../Style%20Library/ThinkBox_Script/highcharts.js"></script>
+<script type="text/javascript" src="../Style%20Library/ThinkBox_Script/underscore-min.js"></script>
+<script type="text/javascript" src="../Style%20Library/ThinkBox_Script/bootbox.js"></script>
+<script type="text/javascript" src="../Style%20Library/ThinkBox_Script/BootSideMenu.js"></script>
+<link rel="stylesheet" href="../Style%20Library/ThinkBox_CSS/BootSideMenu.css">
+
+<style>
+.pi-wrapper { padding: 9px 13px; width: 100%; float: left; overflow-y: scroll; height: 100% !important; overflow-x: hidden; z-index: 99; background: #f3f3f3; }
+#pageloaddiv { position: fixed; left: 0px; top: 0px; width: 100%; height: 100%; z-index: 1000; background: url('/group/thinkbox/Style%20Library/Images/loader.gif') no-repeat center center; }
+.headerBox ul li { display: inline-block;}
+</style>
+
+<script type="text/javascript">
+
+    var ItemCount;
+    var i = 0;    
+    var drs = checkDr();
+    var arrChallenge = [];
+    var arrAllIdeasTagged = [];
+    var arrImageUrl = [];
+    var leaderrole = localStorage.getItem("userLeaderType");
+    var role = localStorage.getItem("userLeaderType");
+    var locatio = localStorage.getItem("userLocation");
+    var vertical = localStorage.getItem("userVertical");
+    var userOldVertical;
+    var userOldLocation;
+    var btnSelectedRole = "";
+
+    $(document).ready(function () {
+
+        $('#pageloaddiv').css("display", "none");
+        $("#OpenChallenge").click(function () {            
+            getOpenChallenges();
+        });
+
+        raisedBy = "Leader";
+        $("#IdeaService").prop("disabled", true);
+        $("#IdeaLocation").prop("disabled", true);
+
+        //Code added by Suman for hiding cross function visible check        
+        if (role == "Vertical Leader") {
+            document.getElementById("crossFunctionSelectionDiv").disabled = false;
+        }
+        else {
+            document.getElementById("crossFunctionSelectionDiv").disabled = true;
+        }
+
+        jQuery('#EstimatedHours,#EstimatedCost').keyup(function () {
+            this.value = this.value.replace(/[^0-9\.]/g, '');
+        });
+
+        $('#IdeaDesc').keyup(function () {
+
+            var max = 600;
+            var len = $(this).val().length;
+            if (len >= max) {
+
+                $('#countdes').text(' you have reached the limit');
+            } else {
+                var char = max - len;
+                $('#countdes').text(char + ' characters left');
+            }
+        });
+
+        $('#IdeaName').keyup(function () {
+
+            var max = 200;
+            var len = $(this).val().length;
+            if (len >= max) {
+
+                $('#countTitle').text(' you have reached the limit');
+            } else {
+                var char = max - len;
+                $('#countTitle').text(char + ' characters left');
+            }
+        });
+
+        MonthlyStats(btnSelectedRole, vertical, locatio);
+
+        bindProgressBar(vertical, locatio);
+
+        GetchartData(btnSelectedRole, vertical, locatio);
+
+        getListData(btnSelectedRole, vertical, locatio);
+
+        /****************** Cross Functional DropDown ***********************************************************/
+        //Code By Suman for check cross function
+
+        $('#chkCrossfunction').click(function () {
+            var dd = document.getElementById("IdeaServiceLine");
+            for (var i = 0; i < dd.options.length; i++) {
+                if (dd.options[i].text === "Select Line") {
+                    dd.selectedIndex = i;
+                    break;
+                }
+            }
+
+            var dd = document.getElementById("IdeaService");
+            for (var i = 0; i < dd.options.length; i++) {
+                if (dd.options[i].text === "Select Service") {
+                    dd.selectedIndex = i;
+                    break;
+                }
+            }
+
+            var dd = document.getElementById("IdeaLocation");
+            for (var i = 0; i < dd.options.length; i++) {
+                if (dd.options[i].text === "Select Location") {
+                    dd.selectedIndex = i;
+                    break;
+                }
+            }
+
+            if (!$(this).is(':checked')) {
+                $('#CrossFunctiondiv').hide();
+                $("#CrossFunctionVertical").empty();
+                $("#IdeaServiceLine").prop("disabled", false);
+                $("#IdeaService").empty();
+                $("#IdeaService").prop("disabled", true);
+                $("#IdeaLocation").empty();
+                $("#IdeaLocation").prop("disabled", true);
+
+            }
+            else {
+                // get verticals from CrossFunctionDetails list using location.
+                var appendThis1 = "";
+                $("#CrossFunctionVertical").empty();
+                $("#IdeaServiceLine").prop("disabled", true);
+                $("#IdeaService").empty();
+                $("#IdeaService").prop("disabled", true);
+                $("#IdeaLocation").empty();
+                $("#IdeaLocation").prop("disabled", true);
+                $('#CrossFunctiondiv').show();
+                var query = "<Query><Where><Eq><FieldRef Name='Location'/><Value Type='Text'>" + locatio + "</Value></Eq></Where></Query>";
+
+                $().SPServices({
+                    operation: "GetListItems",
+                    async: false,
+                    listName: "CrossFunctionDetails",
+                    CAMLViewFields: "<ViewFields><FieldRef Name='CrossFunction' /></ViewFields>",
+                    CAMLQuery: query,
+                    completefunc: function (xData, Status) {
+                        $(xData.responseXML).SPFilterNode("z:row").each(function () {
+                            var vcrossfunction = $(this).attr("ows_CrossFunction");
+                            if (vcrossfunction !== thinkBox.userVertical) {
+                                appendThis1 += "<option value='" + vcrossfunction + "'>" + vcrossfunction + "</option>";
+                            }
+                        });
+                    }
+                });
+                $("#CrossFunctionVertical").append(appendThis1);
+            }
+        });
+
+        /*********** HIde Show open challenge link *********/
+        $("#TagChallengeLinkID").empty();
+        $("#TagChallengeLink").hide();
+        $("#OpenChallengeLink").show();
+        /*********** End challenge link *********/
+        /*********** service line list **************/
+
+
+        if ((leaderrole === "Global Leader") || (leaderrole == "Central Leader") || (leaderrole == "Functional Leader")) {
+            var charData = [];
+            var sortedServiceLine = [];
+            $("#IdeaServiceLine").empty();
+            $("#IdeaServiceLine").append("<option value='Line'>Select Line</option>");
+            $().SPServices({
+                operation: "GetListItems",
+                async: false,
+                listName: "ServiceLineGlobalCentralLeader",
+                CAMLViewFields: "<ViewFields><FieldRef Name='ServiceLine' /></ViewFields>",
+                CAMLQuery: "<Query><OrderBy><FieldRef Name='Modified' Ascending='False' /></OrderBy></Query>",
+                completefunc: function (xData, Status) {
+                    $(xData.responseXML).SPFilterNode("z:row").each(function () {
+                        var vServiceline = $(this).attr("ows_ServiceLine");
+                        if ($.inArray(vServiceline, charData) == -1) {
+                            charData.push(vServiceline);
+                            //var appendThis = "<option value='" + vServiceline + "'>" + vServiceline + "</option>";
+                            //$("#IdeaServiceLine").append(appendThis);
+                            sortedServiceLine.push({
+                                text: $(this).attr("ows_ServiceLine"),
+                                value: $(this).attr("ows_ServiceLine")
+                            });
+                        }
+                    });
+                }
+            });
+
+            sortedServiceLine.sort(ServiceLineSortByName);
+            for (var i = 0; i < sortedServiceLine.length ; i++) {
+                var appendThis = "<option value='" + sortedServiceLine[i].text + "'>" + sortedServiceLine[i].value + "</option>";
+                $("#IdeaServiceLine").append(appendThis);
+            }
+        }
+        else {
+            var charData = [];
+            var sortedServiceLine = [];
+            $("#IdeaServiceLine").empty();
+            $("#IdeaServiceLine").append("<option value='Line'>Select Line</option>");
+            $().SPServices({
+                operation: "GetListItems",
+                async: false,
+                listName: "ServiceLine",
+                CAMLViewFields: "<ViewFields><FieldRef Name='ServiceLine' /></ViewFields>",
+                CAMLQuery: "<Query><Where><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + vertical + "</Value></Eq><Eq><FieldRef Name='ServiceLineLocation' /><Value Type='Text'>" +locatio+ "</Value></Eq></And></Where></Query>",
+                completefunc: function (xData, Status) {
+                    $(xData.responseXML).SPFilterNode("z:row").each(function () {
+                        var vServiceline = $(this).attr("ows_ServiceLine");
+                        if ($.inArray(vServiceline, charData) == -1) {
+                            charData.push(vServiceline);
+                            //var appendThis = "<option value='" + vServiceline + "'>" + vServiceline + "</option>";
+                            //$("#IdeaServiceLine").append(appendThis);
+                            sortedServiceLine.push({
+                                text: $(this).attr("ows_ServiceLine"),
+                                value: $(this).attr("ows_ServiceLine")
+                            });
+                        }
+                    });
+                }
+            });
+
+            sortedServiceLine.sort(ServiceLineSortByName);
+            for (var i = 0; i < sortedServiceLine.length ; i++) {
+                var appendThis = "<option value='" + sortedServiceLine[i].text + "'>" + sortedServiceLine[i].value + "</option>";
+                $("#IdeaServiceLine").append(appendThis);
+            }
+        }
+
+        $("#IdeaServiceLine").change(function () {
+            $("#IdeaService").prop("disabled", false);
+            if ((leaderrole == "Global Leader") || (leaderrole == "Central Leader") || (leaderrole == "Functional Leader")) {
+                $("#IdeaService").prop("disabled", true);
+                $("#IdeaLocation").prop("disabled", true);
+                $("#IdeaService").empty();
+                var appendThis1 = "<option value='ALL'>ALL</option>";
+                $("#IdeaService").append(appendThis1);
+                $("#IdeaLocation").empty();
+                $("#IdeaLocation").append(appendThis1);
+            }
+            else {
+                var selectitem = $("#IdeaServiceLine").val();
+                var serviceArray = [];
+                var sortedService = [];
+                $("#IdeaService").html('');
+                $("#IdeaService").append("<option value='Service'>Select Service</option>");
+                var query = "<Query><Where><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + vertical + "</Value></Eq><And><Eq><FieldRef Name='ServiceLine'/><Value Type='Text'>" + selectitem + "</Value></Eq><Eq><FieldRef Name='ServiceLineLocation' /><Value Type='Text'>" + locatio+ "</Value></Eq></And></And></Where></Query>";
+                $().SPServices({
+                    operation: "GetListItems",
+                    async: false,
+                    listName: "ServiceLine",
+                    CAMLViewFields: "<ViewFields><FieldRef Name='Service' /></ViewFields>",
+                    CAMLQuery: query,
+                    completefunc: function (xData, Status) {
+                        $(xData.responseXML).SPFilterNode("z:row").each(function () {
+                            var vservice = $(this).attr("ows_Service");
+                            if (($.inArray(vservice, serviceArray) == -1)) {
+                                serviceArray.push(vservice);
+                                //var appendThis1 = "<option value='" + vservice + "'>" + vservice + "</option>";
+                                //$("#IdeaService").append(appendThis1);
+                                sortedService.push({
+                                    text: $(this).attr("ows_Service"),
+                                    value: $(this).attr("ows_Service")
+                                });
+                            }
+                        });
+                    }
+                });
+
+                sortedService.sort(ServiceLineSortByName);
+                for (var i = 0; i < sortedService.length ; i++) {
+                    var appendThis1 = "<option value='" + sortedService[i].text + "'>" + sortedService[i].value + "</option>";
+                    $("#IdeaService").append(appendThis1);
+                }
+            }
+        });
+
+        $("#IdeaService").change(function () {
+            var sortedLocation = [];
+            $("#IdeaLocation").prop("disabled", false);
+            var selectitemIdeaServiceLine = $("#IdeaServiceLine").val();
+            var selectitemService = $("#IdeaService").val();
+            $("#IdeaLocation").empty();
+            $("#IdeaLocation").html('');
+            $("#IdeaLocation").append("<option value='Location'>Select Location</option>");
+            var query = "<Query><Where><And><Eq><FieldRef Name='ServiceLineLocation' /><Value Type='Text'>" + locatio + "</Value></Eq><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" +vertical + "</Value></Eq><And><Eq><FieldRef Name='ServiceLine'/><Value Type='Text'>" + selectitemIdeaServiceLine + "</Value></Eq><Eq><FieldRef Name='Service'/><Value Type='Text'>" + selectitemService + "</Value></Eq></And></And></And></Where></Query>";
+
+            $().SPServices({
+                operation: "GetListItems",
+                async: false,
+                listName: "ServiceLine",
+                CAMLViewFields: "<ViewFields><FieldRef Name='Location' /></ViewFields>",
+                CAMLQuery: query,
+                completefunc: function (xData, Status) {
+                    $(xData.responseXML).SPFilterNode("z:row").each(function () {
+                        var vLocation = $(this).attr("ows_Location");
+                        //var appendThis1 = "<option value='" + vLocation + "'>" + vLocation + "</option>";
+                        //$("#IdeaLocation").append(appendThis1);
+                        sortedLocation.push({
+                            text: $(this).attr("ows_Location"),
+                            value: $(this).attr("ows_Location")
+                        });
+                    });
+                }
+            });
+
+            sortedLocation.sort(ServiceLineSortByName);
+            for (var i = 0; i < sortedLocation.length ; i++) {
+                var appendThis1 = "<option value='" + sortedLocation[i].text + "'>" + sortedLocation[i].value + "</option>";
+                $("#IdeaLocation").append(appendThis1);
+            }
+
+        });
+
+
+        /************* end service line list ************/
+        /************* Location drop down ************/
+        if (locatio == "Egypt") {
+            $("#IdeaLocation").empty();
+            var appendThis1 = "<option value='Cairo'>Cairo</option>";
+            $("#IdeaLocation").append(appendThis1);
+        }
+        else if (locatio == "Romania") {
+            $("#IdeaLocation").empty();
+            var appendThis1 = "<option value='Bucharest'>Bucharest</option>";
+            $("#IdeaLocation").append(appendThis1);
+        }
+        else if (locatio == "Budapest") {
+            $("#IdeaLocation").empty();
+            var appendThis1 = "<option value='Budapest'>Budapest</option>";
+            $("#IdeaLocation").append(appendThis1);
+        }
+        /************* End of location drop down ********/
+
+        //Code By Suman for sorting data
+        function ServiceLineSortByName(a, b) {
+            var aName = a.text.toLowerCase();
+            var bName = b.text.toLowerCase();
+            return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
+        }
+
+
+        /***************** Button Reset click ****************************/
+        $("#btnReset").click(function () {
+            document.getElementById("IdeaName").value = "Enter Title";
+            document.getElementById("IdeaDesc").value = "Enter Description";
+            document.getElementById("EstimatedHours").value = "Number of hours saved per month";
+            //document.getElementById("Currency").value = "Select Currency";
+            document.getElementById("EstimatedCost").value = "Estimated cost benefits";
+            document.getElementById("IdeaServiceLine").value = "";
+            document.getElementById("IdeaService").value = "";
+            $("#IdeaServiceLine").prop("disabled", false);
+            $("#IdeaService").prop("disabled", false);
+            $('#IdeaServiceLine').get(0).selectedIndex = 0;
+            $('#IdeaService').get(0).selectedIndex = 0;
+            $('#IdeaLocation').get(0).selectedIndex = 0;
+            $('#Currency').get(0).selectedIndex = 0;
+            $("#TagChallengeLinkID").empty();
+            $("#TagChallengeLink").hide();
+            $("#OpenChallengeLink").show();
+            $('#CrossFunctiondiv').hide();
+            $("#CrossFunctionVertical").empty();
+
+        });
+
+
+        $("#submit").click(function () {
+            if (validateAllFields()) {
+                var TagChallengeID = $("#TagChallengeLinkID").html();
+                var Title = $("#IdeaName").val();
+                var IdeaDesc = $("#IdeaDesc").val();
+                var EstimatedHours = $("#EstimatedHours").val();
+
+                if (EstimatedHours == 'Number of hours saved per month' || EstimatedHours == '') {
+                    EstimatedHours = parseInt(0);
+                }
+
+                var EstimatedCost = $("#EstimatedCost").val();
+
+                if (EstimatedCost == 'Estimated cost benefits' || EstimatedCost == '') {
+                    EstimatedCost = parseInt(0);
+                }
+
+                var Currency = $("#Currency").val();
+                var IdeaServiceLine = $("#IdeaServiceLine").val();
+                var IdeaService = $("#IdeaService").val();
+                var IdeaLocation = $("#IdeaLocation").val();
+                var crossfunction = "";
+                var Ideatype = "Own function";
+                if ($("#CrossFunctionVertical").val()) {
+                    crossfunction = $("#CrossFunctionVertical").val();
+                    Ideatype = "Cross function";
+                }
+                var listname;
+                listname = "V-Ideas";
+                IdeaStatus = "Waiting for L3";
+                raisedBy = "Leader";
+                AddIdea(IdeaStatus, Title, IdeaDesc, EstimatedHours, EstimatedCost, Currency, TagChallengeID, IdeaServiceLine, IdeaService, raisedBy, vertical, listname, IdeaLocation, crossfunction, Ideatype, locatio);
+
+            }
+        });
+
+        //Code Added By Suman to reset the page after click of location and vertical dropdown
+
+        //On click of go button
+
+        function ShowLoading() {
+
+            $("#showLoading").show();
+            $("#showLoading").css('display', 'block');
+            $("#showLoading").text('<h1>Loading........</h1>');
+
+        }
+
+        $("#verticalLocationSelectButton").on("click", function () {
+
+            //ShowLoading();
+            $('#pageloaddiv').show();
+            $('#pageloaddiv').css("display", "block");
+            $("#showLoadingText").show();
+            $("#showLoadingText").text("Loading...");
+
+            setTimeout(function () {               
+
+                role = localStorage.getItem("userLeaderType");
+                var selectedLocation = $("#topLocationSelector option:selected").text();
+                var selectedVertical = $("#topVerticalSelector option:selected").text();
+
+                if (selectedLocation === 'Select Location' || selectedVertical === 'Select Vertical') {
+                    //alert("Please select vertical and location both to get other ideas.");
+
+                    $("#AlertModalBody").empty();
+                    $("#AlertModalFooter").empty();
+                    var body = "<div class='popupSmBox'> <div class='overflowHidden'><button type='button' class='close' data-dismiss='modal'><img src='/Group/Thinkbox/Style%20Library/Images/close_btn.png' /></button></div><div class='dividerLine'></div> <div class='popupSmBoxContent'><p>Please select vertical and location.</p></p></div><div class='popupBottmBttnDivider'> <div class='bttnComman bttnPurple' type='button' data-dismiss='modal' value='close'> Close </div> </div></div>";
+                    $("#AlertModalBody").append(body);
+                    $('.popupSmBox').parent().parent().parent().css('width', '600px');
+                    $("#AlertModal").modal();
+                }
+                else {
+                    localStorage.setItem("userSelectedVertical", selectedVertical);
+                    localStorage.setItem("userSelectedLocation", selectedLocation);
+
+                    var btnSelectedRole = "Vertical Leader";
+
+                    //Method to call the bind graph method
+                    MonthlyStats(btnSelectedRole, selectedVertical, selectedLocation);
+
+                    //The progress bar is not comming from Location and vertical filter as this is static data.
+                    bindProgressBar(selectedVertical, selectedLocation);
+
+                    GetchartData(btnSelectedRole, selectedVertical, selectedLocation);
+
+                    //The list data is not comming from Location and vertical filter from leader top page filter as discussed from Apoorva.
+                    getListData(btnSelectedRole, selectedVertical, selectedLocation);
+                }
+                $('#pageloaddiv').css("display", "none");
+                $("#showLoadingText").hide();
+            }, 2000);
+        });
+
+        //On Click of Reset button
+
+        $("#verticalLocationResetFiltersButton").click(function () {
+
+            //ShowLoading();
+            $('#pageloaddiv').show();
+            $('#pageloaddiv').css("display", "block");
+            $("#showLoadingText").show();
+            $("#showLoadingText").text("Loading...");
+
+            setTimeout(function () {
+
+            var selectedVertical = "Select Vertical";
+            var selectedLocation = "Select Location";
+
+            localStorage.setItem("userSelectedVertical", selectedVertical);
+            localStorage.setItem("userSelectedLocation", selectedLocation);            
+
+            //$("#topVerticalSelector").val("Select Vertical");
+            //$("#topLocationSelector").val("Select Location");
+
+                //Added By Suman to reset dropdown value of vertical and location
+            $("#topVerticalSelector").empty();
+            $("#topLocationSelector").empty();
+
+                //Added By Suman
+            thinkBox.fillVerticalAndLocationOnPageLoad();
+
+            //$("#topLocationSelector").append("<option value='" + selectedLocation + "'>" + selectedLocation + "</option>");
+            //$("#topVerticalSelector").append("<option value='" + selectedVertical + "'>" + selectedVertical + "</option>");
+
+
+            role = leaderrole;
+
+            var userOldVertical = localStorage.getItem("userVertical");
+            var userOldLocation = localStorage.getItem("userLocation");
+
+            var btnSelectedRole = "";
+
+            MonthlyStats(btnSelectedRole, userOldVertical, userOldLocation);
+            bindProgressBar(userOldVertical, userOldLocation);
+            GetchartData(btnSelectedRole, userOldVertical, userOldLocation);
+            getListData(btnSelectedRole, userOldVertical, userOldLocation);
+
+            $('#pageloaddiv').hide();
+            }, 2000);
+
+        });
+
+        $("#topLocationSelector").change(function () {
+            var selectedLocation = $("#topLocationSelector option:selected").text();
+            if ((selectedLocation == "Egypt") || (selectedLocation == "Romania")) {
+                $("#topVerticalSelector").empty();
+                var vVertical = "Technology SSC";
+                var appendThis1 = "<option value='" + vVertical + "'>" + vVertical + "</option>";
+
+                $("#topVerticalSelector").append(appendThis1);
+            }
+            else {
+                $("#topLocationSelector").empty();
+                $("#topVerticalSelector").empty();
+                thinkBox.fillVerticalAndLocationOnPageLoad();
+
+                $("#topLocationSelector option").each(function () {
+                    if ($(this).text() == selectedLocation) {
+                        $(this).attr('selected', 'selected');
+                    }
+                });
+
+            }
+        });
+
+    });
+
+    function ShowChallenges() {
+
+
+        //Sumans code to get open challenges
+        getOpenChallenges();
+
+        $("#MainModalBody").empty();
+        var PopupStart;
+        var PopupText;
+        var PopupEnd;
+        var body = "";
+
+        $.each(arrChallenge, function (index, value) {
+
+            var ChallengeID = value.ChallengeID;
+            var ChallengeTitle = value.ChallengeTitle;
+            var ChallengeDesc = value.ChallengeDesc;
+            var CreatedBy = value.Author;
+            var TotalIdeasTagged = value.IdeasTaggd;
+            if (!TotalIdeasTagged || isNaN(TotalIdeasTagged)) {
+                TotalIdeasTagged = 0;
+            }
+            TotalIdeasTagged = parseInt(TotalIdeasTagged);
+            var TotalIdeasFunded = value.IdeasFunded;
+            if (!TotalIdeasFunded || isNaN(TotalIdeasFunded)) {
+                TotalIdeasFunded = 0;
+            }
+            TotalIdeasFunded = parseInt(TotalIdeasFunded);
+            var TotalFundings = value.TotalFundings;
+            if (!TotalFundings || isNaN(TotalFundings)) {
+                TotalFundings = 0;
+            }
+            TotalFundings = parseInt(TotalFundings);
+
+            var arrCreatedBy = CreatedBy.split('#');
+            var arrCreatedByForID = CreatedBy.split(';');
+            var Author = arrCreatedBy[1];
+            var ImageUrl = value.LeaderImageUrl;
+            if (!ImageUrl) {
+                ImageUrl = "/group/thinkbox/Style%20Library/Images/DefaultUser.png";
+            }
+            var LeaderName = Author;
+            var ExpiresIn = ExpiresInDays(value.Created);
+
+            body += "<div class='pi-content'><span class='top-left'> </span> <span class='top-right'> </span> <span class='bottom-left'> </span> <span class='bottom-right'></span> <div id='LHSText' style='padding:0 10px 0 0; margin: 0;min-height:120px;' class='col-md-9 col-xs-9 PD-XS-RT border-right MR-SM-RT'> <div class='tag-popup-height'> <h1><div><b>" + ChallengeTitle + "</b></div></h1> <p>" + ChallengeDesc + "</p> </div> <div style='margin-top:0px;' class='bottom-link'> <img class='user-img' src='/group/thinkbox/Style Library/Images/profile_pic.png' alt=''> <span style='width:0px!important;' class='round-user widthnone'> <img src='" + ImageUrl + "'></span> <span class='exp-days pull-left'> <i>By: " + LeaderName + "</i> </span> </div> </div> <div id='RHSText' class='col-md-pull-4 col-xs-pull-3 rght-PI RHSText text-center myidea-lebal PDL-sm-left'><p> <span class='tagideatxt'>Ideas tagged</span>:<b>" + TotalIdeasTagged + "</b> </p> <p><span class='tagideatxt'>Ideas funded</span> :<b>" + TotalIdeasFunded + "</b> </p> <p><span class='tagideatxt'>Investment</span>:<b>" + TotalFundings + " </b></p><div style='margin-top:15px;' class='bttnComman bttnPurple' id=tag_" + ChallengeID + " onclick='TagChallenge(id)' data-dismiss='modal'> Tag <span class='leftTop'></span> <span class='rightTop'></span> <span class='rightBottom'></span> <span class='leftBottom'></span> </div> </div> </div>";
+
+            PopupStart = "<div class='popupBigBox'> <div class='overflowHidden'> <button type='button' class='close' data-dismiss='modal'> <img src='/group/thinkbox/Style Library/Images/close_btn.png' /></button></div> <div class='dividerLine'> </div> <div class='popupSmBoxContent overflowHidden text-left popup-scroll-height'>";
+            PopupEnd = "</div> </div>";
+            PopupText = PopupStart + body + PopupEnd;
+        });
+        if (!PopupText || PopupText === 'undefined') {
+            PopupText = "<div class='popupBigBox'> <div class='overflowHidden'> <button type='button' class='close' data-dismiss='modal'> <img src='/group/thinkbox/Style Library/Images/close_btn.png' /></button></div> <div class='dividerLine'> </div> <div class='popupSmBoxContent overflowHidden text-left popup-scroll-height'>No challenges available to tag.</div></div>";
+        }
+        $("#MainModalBody").append(PopupText);
+
+        $("#myModal").modal();
+    }
+
+    function TagChallenge(ChallengeID) {
+        var challengeID = ChallengeID.split('_')[1];
+        var ChallengeTitle = getChallengeName(challengeID);
+        //alert("TagChallenge"+ChallengeID);	
+        $("#OpenChallengeLink").hide();
+        $("#TagChallengeLink").show();
+        $("#TagChallengeLinkID").append(challengeID);
+        $("#TagChallengeTitle").empty();
+        $("#TagChallengeTitle").append(ChallengeTitle);
+
+    }
+    /* Get Challenge Name by ID */
+    function getOpenChallenges() {
+        $("#MainModalBody").empty();
+        var body = "";
+        var PopupText;
+        var PopupStart;
+        var PopupEnd;
+        var query = "<Query><Where>";
+        if (leaderrole == "Global Leader") {
+            query += fetchDatafromConfigList("Global Leader Query");
+        }
+        else if (leaderrole == "Functional Leader") {
+            query += fetchDatafromConfigList("Functional Leader Query");
+            query = query.replace(/vertical/g, vertical);
+            query = query.replace(/drs/g, drs);
+
+        }
+        else if (leaderrole == "Central Leader") {
+            query += fetchDatafromConfigList("Central Leader Query");
+            query = query.replace(/locatio/g, locatio);
+            query = query.replace(/drs/g, drs);
+
+        }
+        else if (leaderrole == "Vertical Leader") {
+            query += fetchDatafromConfigList("Vertical Leader Query");
+            query = query.replace(/locatio/g, locatio);
+            query = query.replace(/vertical/g, vertical);
+            query = query.replace(/drs/g, drs);
+
+        }
+        query += "</Where><OrderBy><FieldRef Name='Created' Ascending='False'/></OrderBy></Query>";
+
+        $().SPServices({
+            operation: "GetListItems",
+            async: false,
+            listName: "Challenges",
+            CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='Description' /><FieldRef Name='PictureURL' /><FieldRef Name='IdeasTagged' /><FieldRef Name='IdeasFunded' /><FieldRef Name='Author' /><FieldRef Name='TotalFundings' /></ViewFields>",
+            CAMLQuery: query,
+            completefunc: function (xData, Status) {
+                $(xData.responseXML).SPFilterNode("z:row").each(function () {
+
+                    var TotalIdeasTagged = Math.round($(this).attr("ows_IdeasTagged"));
+                    var TotalIdeasFunded = Math.round($(this).attr("ows_IdeasFunded"));
+                    var TotalFundings = Math.round($(this).attr("ows_TotalFundings"));
+
+                    if (!TotalIdeasTagged || isNaN(TotalIdeasTagged)) {
+                        TotalIdeasTagged = 0;
+                    }
+
+                    if (!TotalIdeasFunded || isNaN(TotalIdeasFunded)) {
+                        TotalIdeasFunded = 0;
+                    }
+
+                    if (!TotalFundings || isNaN(TotalFundings)) {
+                        TotalFundings = 0;
+                    }
+
+                    var ChallengeID = $(this).attr("ows_ID");
+                    var ChallengeTitle = $(this).attr("ows_Title");
+                    var ChallengeDesc = $(this).attr("ows_Description");
+                    var CreatedBy = $(this).attr("ows_Author");
+                    var arrCreatedBy = CreatedBy.split('#');
+                    var arrCreatedByForID = CreatedBy.split(';');
+                    var Author = arrCreatedBy[1];
+                    var ImageUrl = $(this).attr("ows_PictureURL");
+                    var LeaderName = Author;
+                    var ExpiresIn = ExpiresInDays($(this).attr("ows_Created"));
+                    body += "<div class='pi-content'> <div id='LHSText' style='padding:0 10px 0 0; margin: 0;' class='col-md-9 col-xs-9 PD-XS-RT border-right MR-SM-RT'> <h1><div><b>" + ChallengeTitle + "</b></div></h1> <p>" + ChallengeDesc + "</p> <div class='bottom-link'> <span class='round-user'> <img src='" + ImageUrl + "'></span> <span class='exp-days pull-left'> <i>By: " + LeaderName + "</i> </span> </div> </div> <div id='RHSText' class='col-md-pull-4 col-xs-pull-3 rght-PI RHSText text-center myidea-lebal'><p> <span class='tagideatxt'>Ideas tagged</span>:<b>" + TotalIdeasTagged + "</b> </p> <p><span class='tagideatxt'>Ideas funded</span> :<b>" + TotalIdeasFunded + "</b> </p> <p><span class='tagideatxt'>Investment</span>:<b>" + TotalFundings + " </b></p><div class='bttnComman bttnPurple' id=tag_" + ChallengeID + " onclick='TagChallenge(id)' data-dismiss='modal'> Tag <span class='leftTop'></span> <span class='rightTop'></span> <span class='rightBottom'></span> <span class='leftBottom'></span> </div> </div> </div>";
+
+                    PopupStart = "<div class='popupBigBox'> <div class='overflowHidden'> <button type='button' class='close' data-dismiss='modal'> <img src='/Group/Thinkbox/Style%20Library/Images/close_btn.png' /></button></div> <div class='dividerLine'> </div> <div class='popupSmBoxContent overflowHidden text-left popup-scroll-height'>";
+                    PopupEnd = "</div> </div>";
+                    PopupText = PopupStart + body + PopupEnd;
+                });
+            }
+        });
+
+        $("#MainModalBody").append(PopupText);
+        $("#myModal").modal();
+    }
+
+
+    /*Check if Role is of DR*/
+    function checkDr() {
+        var reportingManager = "";
+        var userEmail = $().SPServices.SPGetCurrentUser({ fieldName: "Email", debug: false });
+        var query = "<Query><Where><Eq><FieldRef Name='EmployeeEmail' /><Value Type='Text'>" + userEmail + "</Value></Eq></Where></Query>";
+        $().SPServices({
+            operation: "GetListItems",
+            async: false,
+            listName: "Direct Reportees",
+            CAMLViewFields: "<ViewFields><FieldRef Name='ReportingtoEmail' /></ViewFields>",
+            CAMLQuery: query,
+            completefunc: function (xData, Status) {
+                $(xData.responseXML).SPFilterNode("z:row").each(function () {
+
+                    reportingManager = $(this).attr("ows_ReportingtoEmail");
+
+                });
+            }
+        });
+        return reportingManager;
+    }
+
+    function getChallengeName(id) {
+
+        var ChallengeName;
+
+        var query = "<Query><Where><Eq><FieldRef Name='ID' /><Value Type='Number'>" + id + "</Value></Eq></Where></Query>";
+
+        $().SPServices({
+            operation: "GetListItems",
+            async: false,
+            listName: "Challenges",
+            CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='Description' /></ViewFields>",
+            CAMLQuery: query,
+            completefunc: function (xData, Status) {
+                $(xData.responseXML).SPFilterNode("z:row").each(function () {
+                    var ChallengeID = $(this).attr("ows_ID");
+                    ChallengeName = $(this).attr("ows_Title");
+
+                });
+            }
+        });
+        return ChallengeName;
+
+    }
+
+    function ExpiresInDays(Created) {
+        var now = new Date();
+        var curr_date = now.getDate();
+        var curr_month = now.getMonth() + 1;
+        var curr_year = now.getFullYear();
+        var startDate = curr_date + "/" + curr_month + "/" + curr_year;// now.toDateString('dd/MM/yyyy');
+
+        var SplitCreated = Created.split(' ')[0];
+        var expire_date = SplitCreated.split("-")[0];
+        var expire_month = SplitCreated.split("-")[1];
+        var expire_year = SplitCreated.split("-")[2];
+
+        var endDate = expire_date + "/" + expire_month + "/" + expire_year;
+        var firstDate = new Date(curr_year, curr_month, curr_date);
+        var secondDate = new Date(expire_year, expire_month, expire_date);
+        var millisecondsPerDay = 24 * 60 * 60 * 1000;
+
+        var totalDays = (firstDate - secondDate) / millisecondsPerDay;
+        var DaysLeft = 180 - parseInt(totalDays);
+
+        return DaysLeft;
+    }
+
+    /********************* Add new Idea *******************************************************/
+    function AddIdea(IdeaStatus, Title, IdeaDesc, EstimatedHours, EstimatedCost, Currency, TagChallengeID, IdeaServiceLine, IdeaService, raisedBy, vertical, listname, IdeaLocation, crossfunction, Ideatype, locatio) {
+
+        var manager = $().SPServices.SPGetCurrentUser({
+            fieldName: "Manager"
+        });
+        var thisUserName = $().SPServices.SPGetCurrentUser({
+            fieldName: "FirstName",
+            debug: false
+        });
+
+        var pushData = "";
+        if (Ideatype != "Own function") {
+            pushData = vertical;
+            vertical = crossfunction;
+        }
+
+        $().SPServices({
+            operation: "UpdateListItems",
+            async: false,
+            batchCmd: "New",
+            listName: listname,
+            valuepairs: [["Title", Title], ["IdeaStatus", IdeaStatus], ["IdeaDescription", IdeaDesc], ["EstimatedBenefitsInHours", EstimatedHours], ["EstimatedBenefitsInCost", EstimatedCost], ["EstimatedBenefitsCostCurrency", Currency], ["ChallengeID", TagChallengeID], ["IdeaServiceLine", IdeaServiceLine], ["IdeaService", IdeaService], ["RaisedBy", raisedBy], ["VerticalName", vertical], ["ManagerID", manager], ["IdeaLocation", IdeaLocation], ["VIdeaType", Ideatype], ["Location", locatio]],
+            completefunc: function (xData, Status) {
+                $("#AlertModalBody").empty();
+                $("#AlertModalFooter").empty();
+                var body = "<div class='popupSmBox'> <div class='overflowHidden'><button type='button' class='close' data-dismiss='modal'><img src='/Group/Thinkbox/Style%20Library/Images/close_btn.png' /></button></div><div class='dividerLine'></div> <div class='popupSmBoxContent'><p><h1>Congratulations " + thisUserName + "!</h1><p>Your Idea has been posted successfully.</p></p><div type='button' class='bttnComman bttnPurple bttnMarginSD' id='Button1'  onClick='RedirectToMyIdea()' data-dismiss='modal'>Show My Idea<span class='leftTop'></span> <span class='rightTop'></span> <span class='rightBottom'></span> <span class='leftBottom'></span></div></div>";
+                $("#AlertModalBody").append(body);
+                $('.popupSmBox').parent().parent().parent().css('width', '600px');
+                $("#AlertModal").modal();
+            }
+        });
+        vertical = pushData;
+    }
+    function RedirectToMyIdea() {
+
+        window.location.href = $().SPServices.SPGetCurrentSite() + "/pages/myideaDetails.aspx?TabName=My Idea";
+    }
+    function Confirm() {
+
+        $("#AlertModalBody").empty();
+        $("#AlertModalFooter").empty();
+        var body = "<div class='popupSmBox'> <div class='overflowHidden'><button type='button' class='close' data-dismiss='modal'><img src='/Group/Thinkbox/Style%20Library/Images/close_btn.png' /></button></div><div class='dividerLine'></div> <div class='popupSmBoxContent'><p>Do you want to remove this challenge?</p><div type='button' class='bttnComman bttnPurple bttnMarginSD' id='Yes'  onClick='ConfirmModal(id)' data-dismiss='modal'>Yes<span class='leftTop'></span> <span class='rightTop'></span> <span class='rightBottom'></span> <span class='leftBottom'></span></div><div type='button' class='bttnComman bttnPurple' id='No'  onClick='ConfirmModal(id)' data-dismiss='modal'>No<span class='leftTop'></span> <span class='rightTop'></span> <span class='rightBottom'></span> <span class='leftBottom'></span></div></div></div>";
+        $("#AlertModalBody").append(body);
+
+        $('.popupSmBox').parent().parent().parent().css('width', '600px');
+        $("#AlertModal").modal();
+    }
+
+    function LocationVerticalSelector() {
+
+        $("#AlertModalBody").empty();
+        $("#AlertModalFooter").empty();
+        var body = "<div class='popupSmBox'> <div class='overflowHidden'><button type='button' class='close' data-dismiss='modal'><img src='/Group/Thinkbox/Style%20Library/Images/close_btn.png' /></button></div><div class='dividerLine'></div> <div class='popupSmBoxContent'><p>Do you want to remove this challenge?</p><div type='button' class='bttnComman bttnPurple bttnMarginSD' id='Yes'  onClick='ConfirmModal(id)' data-dismiss='modal'>Yes<span class='leftTop'></span> <span class='rightTop'></span> <span class='rightBottom'></span> <span class='leftBottom'></span></div><div type='button' class='bttnComman bttnPurple' id='No'  onClick='ConfirmModal(id)' data-dismiss='modal'>No<span class='leftTop'></span> <span class='rightTop'></span> <span class='rightBottom'></span> <span class='leftBottom'></span></div></div></div>";
+        $("#AlertModalBody").append(body);
+
+        $('.popupSmBox').parent().parent().parent().css('width', '600px');
+        $("#AlertModal").modal();
+    }
+
+    function ConfirmModal(result) {
+
+        if (result == "Yes") {
+            $("#TagChallengeLinkID").empty();
+            $("#TagChallengeLink").hide();
+            $("#OpenChallengeLink").show();
+        }
+    }
+
+    function validate(evt) {
+        var theEvent = evt || window.event;
+        var key = theEvent.keyCode || theEvent.which;
+        key = String.fromCharCode(key);
+        var regex = /[0-9]|\./;
+        if (!regex.test(key)) {
+            theEvent.returnValue = false;
+            if (theEvent.preventDefault) theEvent.preventDefault();
+        }
+    }
+
+    /* Validate all fields Post an Idea */
+
+    function validateAllFields() {
+
+        $("#valIdeaTitle").hide();
+        $("#valIdeaDescription").hide();
+        $("#valIdeaDescriptionLength").hide();
+        $("#valCurrency").hide();
+        $("#valEstimatedHoursCost").hide();
+        $("#valIdeaServiceLine").hide()
+        $("#valIdeaService").hide();
+        $("#valIdeaLocation").hide();
+
+        var IdeaTitle = $("#IdeaName").val();
+        if (IdeaTitle == 'Enter Title' || IdeaTitle == '') {
+            $("#IdeaName").focus();
+            $("#valIdeaTitle").show();
+            return false;
+        }
+
+        var IdeaDesc = $("#IdeaDesc").val();
+        if (IdeaDesc == 'Enter Description' || IdeaDesc == '') {
+            $("#IdeaDesc").focus();
+            $("#valIdeaDescription").show();
+            return false;
+        }
+
+        if (IdeaDesc.length > 600) {
+            $("#IdeaDesc").focus();
+            $("#valIdeaDescriptionLength").show();
+            return false;
+        }
+
+        var EstimatedHours = $("#EstimatedHours").val();
+        var EstimatedCostBenefits = $("#EstimatedCost").val();
+        var currency = $("#Currency").val();
+
+        if ((EstimatedHours == 'Number of hours saved per month' || EstimatedHours == '') && (EstimatedCostBenefits == 'Estimated cost benefits' || (parseInt(EstimatedCostBenefits) == 0) || currency == 'SEL')) {
+            //$( "#EstimatedHours" ).focus();                                            
+            if (EstimatedCostBenefits != 'Estimated cost benefits') {
+                if (currency == 'SEL') {
+                    $("#valCurrency").show();
+                }
+            }
+            else {
+                $("#valEstimatedHoursCost").show();
+            }
+            return false;
+        }
+
+        if (!($("#CrossFunctionVertical").val())) {
+
+            var IdeaServiceLine = $("#IdeaServiceLine").val();
+            if (IdeaServiceLine == 'Line') {
+                $("#IdeaServiceLine").focus();
+                $("#valIdeaServiceLine").show()
+                return false;
+            }
+
+            if ((leaderrole != "Global Leader") || (leaderrole != "Central Leader") || (leaderrole != "Functional Leader")) {
+                var IdeaService = $("#IdeaService").val();
+                if (IdeaService == '' || IdeaService == 'Service') {
+                    $("#IdeaService").focus();
+                    $("#valIdeaService").show();
+                    return false;
+                }
+                var IdeaLocation = $("#IdeaLocation").val();
+                if (IdeaLocation == 'Location') {
+                    $("#IdeaLocation").focus();
+                    $("#valIdeaLocation").show();
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /* Fetch Data fom Configuration List */
+    function fetchDatafromConfigList(key) {
+        var query = "";
+        $().SPServices({
+            operation: "GetListItems",
+            async: false,
+            listName: "Configuration List",
+            CAMLViewFields: "<ViewFields><FieldRef Name='Key' /><FieldRef Name='Value' /></ViewFields>",
+            CAMLQuery: "<Query><Where><Eq><FieldRef Name='Key' /><Value Type='Text'>" + key + "</Value></Eq></Where></Query>",
+            completefunc: function (xData, Status) {
+                $(xData.responseXML).SPFilterNode("z:row").each(function () {
+                    query = $(this).attr("ows_Value");
+                });
+            }
+        });
+
+        return query;
+
+    }
+
+    //Old Code
+    function processData(xData, status) {
+        var owlData = [];
+        //Suman Code
+        var InProgress = 0;
+        var Completed = 0;
+        var NewIdeas = 0;
+        var BenefitInProgress = 0;
+        var BenefitCompleted = 0;
+        var TotalIdeas = 0;
+        //Suman Code
+        $(xData.responseXML).SPFilterNode("z:row").each(function () {
+            //Suman Code
+            InProgress = $(this).attr('ows_InProgress');
+            Completed = $(this).attr('ows_Completed');
+            NewIdeas = $(this).attr('ows_NewIdeas');
+            BenefitInProgress = $(this).attr('ows_BenefitInProgress');
+            BenefitCompleted = $(this).attr('ows_BenefitCompleted');
+            TotalIdeas = $(this).attr('ows_TotalIdeas');
+            //Suman Code
+        });
+
+        var chartData = [];
+        var FundigsData = [];
+        var varComplete = 0;
+        var varNonComplete = 0;
+        var RealisedFund = 0;
+        var NonRealisedFund = 0;
+
+        NonRealisedFund = (BenefitCompleted / 1000000);
+        NonRealisedFund = Math.round(NonRealisedFund * 100) / 100;
+
+        RealisedFund = (BenefitInProgress / 1000000);
+        RealisedFund = Math.round(RealisedFund * 100) / 100;
+
+        //varComplete = parseInt(Completed);
+        //varNonComplete = parseInt(InProgress);
+
+        //Modified By Suman
+        varComplete = parseInt(Completed);
+        varNonComplete = parseInt(InProgress) - parseInt(Completed);
+
+        chartData.push({
+            name: "Completed",
+            y: varComplete
+        });
+        chartData.push({
+            name: "In Progress",
+            y: varNonComplete
+        });
+        FundigsData.push({
+            name: "Benefits Realised",
+            y: NonRealisedFund
+        });
+        FundigsData.push({
+            name: "Benefits In Progress",
+            y: RealisedFund
+        });
+        renderChart(chartData);
+        renderChartFundings(FundigsData);
+    }
+
+
+    ////New Code Suman
+    //function processData(xData, status) {
+    //    var owlData = [];
+
+    //    $(xData.responseXML).SPFilterNode("z:row").each(function () {
+    //        var HardBenefits = $(this).attr('ows_HardTotalBenefits');
+    //        var PartnerBenefits = $(this).attr('ows_PartnerTotalBenefits');
+    //        var MonSoftBenefitSaved = $(this).attr('ows_MonSoftBenefitSaved');
+
+    //        if (isNaN(HardBenefits)) {
+    //            HardBenefits = 0;
+    //        }
+    //        if (isNaN(PartnerBenefits)) {
+    //            PartnerBenefits = 0;
+    //        }
+    //        if (isNaN(MonSoftBenefitSaved)) {
+    //            MonSoftBenefitSaved = 0;
+    //        }
+    //        owlData.push({
+    //            owl: $(this).attr('ows_Title'),
+    //            Status: $(this).attr('ows_IdeaStatus'),
+    //            TotalFundings: $(this).attr('ows_TotalFundings'),
+    //            HardTotalBenefits: HardBenefits,
+    //            PartnerTotalBenefits: PartnerBenefits,
+    //            SoftTotalBenefits: MonSoftBenefitSaved
+    //            //location: $(this).attr('ows_IdeaLocation')
+    //        });
+    //    });
+
+    //    var chartData = [];
+    //    var FundigsData = [];
+    //    var chartDataApprover = [];
+    //    var varComplete = 0;
+    //    var varNonComplete = 0;
+    //    var RealisedFund = 0;
+    //    var NonRealisedFund = 0;
+    //    var i;
+    //    var locationData = _.groupBy(owlData, 'Status');
+
+    //    _.each(locationData, function (row) {
+    //        var locCount = row.length;
+
+    //        if (row[0].Status != 'Completed' && row[0].Status != 'Rejected') {
+    //            row[0].Status = 'In Progress';
+    //            varNonComplete = varNonComplete + row.length;
+    //            for (i = 0; i < row.length; i++) {
+    //                RealisedFund = parseInt(RealisedFund) + parseInt(row[i].PartnerTotalBenefits) + parseInt(row[i].HardTotalBenefits) + parseInt(row[i].SoftTotalBenefits);
+    //            }
+
+    //        }
+    //        else if (row[0].Status == 'Completed') {
+    //            row[0].Status = 'Completed';
+    //            varComplete = row.length;
+    //            for (i = 0; i < row.length; i++) {
+    //                NonRealisedFund = parseInt(NonRealisedFund) + parseInt(row[i].PartnerTotalBenefits) + parseInt(row[i].HardTotalBenefits) + parseInt(row[i].SoftTotalBenefits);
+
+    //            }
+
+    //        }
+
+    //    });
+
+
+    //    NonRealisedFund = (NonRealisedFund / 1000000);
+    //    NonRealisedFund = Math.round(NonRealisedFund * 100) / 100;
+
+    //    RealisedFund = (RealisedFund / 1000000);
+    //    RealisedFund = Math.round(RealisedFund * 100) / 100;
+
+
+    //    chartData.push({
+    //        name: "Completed",
+    //        y: varComplete
+    //    });
+    //    chartData.push({
+    //        name: "In Progress",
+    //        y: varNonComplete
+    //    });
+    //    FundigsData.push({
+    //        name: "Benefits Realised",
+    //        y: NonRealisedFund
+    //    });
+    //    FundigsData.push({
+    //        name: "Benefits In Progress",
+    //        y: RealisedFund
+    //    });
+    //    renderChart(chartData);
+    //    renderChartFundings(FundigsData);
+    //}
+
+
+    function renderChart(data) {
+        var chart = new Highcharts.Chart({
+            legend: {
+                layout: 'vertical',
+                backgroundColor: '#FFFFFF',
+                align: 'left',
+                verticalAlign: 'bottom',
+                floating: true,
+                x: -130,
+                y: 0
+            },
+            chart: {
+                renderTo: 'owlchart',
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                width: 350,
+                height: 250,
+                spacingLeft: 140
+            },
+            credits: {
+                enabled: false
+            },
+            colors: ['#00b4c5', '#f69a1b'],
+            title: {
+                text: 'Ideas Count'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: { enabled: true, formatter: function () { return Math.round(this.percentage * 100) / 100 + ' %'; },
+                        distance: -20,
+                        color: 'white',
+                        size: '10px',
+                        style: { textShadow: false }
+                    }
+                },
+                allowPointSelect: false,
+                pie: {
+                    point: {
+                        events: {
+                            legendItemClick: function () {
+                                return false;
+                            }
+                        }
+                    }
+                }
+                //showInLegend: true
+            },
+            tooltip: {
+                pointFormat: " <b>{point.y:.of} </b>",
+
+            },
+            series: [{
+                type: 'pie',
+                name: 'Ideas Count',
+                size: '115%',
+                showInLegend: true,
+                innerSize: '60%',
+                data: data
+            }]
+        });
+    }
+    function renderChartFundings(FundigsData) {
+        var chart = new Highcharts.Chart({
+            legend: {
+                layout: 'vertical',
+                title: {},
+                backgroundColor: '#FFFFFF',
+                align: 'right',
+                verticalAlign: 'bottom',
+                floating: true,
+                x: 145,
+                y: 0
+            },
+            chart: {
+                renderTo: 'owlFundingschart',
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                width: 350,
+                height: 250,
+                spacingRight: 140
+            },
+            credits: {
+                enabled: false
+            },
+            colors: ['#00b4c5', '#f69a1b'],
+            title: {
+                text: 'Ideas Funding'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: true,
+                        formatter: function () {
+                            return Math.round(this.percentage * 100) / 100 + ' %';
+                        },
+                        distance: -20,
+                        color: 'white',
+                        size: '10px',
+                        style: {
+                            textShadow: false
+                        }
+
+                    }
+                },            
+
+          pie: {
+            point: {
+            events: {
+            legendItemClick: function () {
+            return false;
+        }
+    }
+    }
+    }
+                
+                //showInLegend: true
+            },
+            tooltip: {
+                valueSuffix: ' Million Euros'
+            },
+            series: [{
+                type: 'pie',
+                name: 'Benefits',
+                size: '115%',
+                showInLegend: true,
+                innerSize: '60%',
+                data: FundigsData
+            }]
+        });
+    }
+    function bindProgressBar(selectedVertical, selectedLocation) {
+
+        var leaderLocation = selectedLocation;
+        var leaderVertical = selectedVertical;
+        var TotalCoins = localStorage.getItem("totalVCoins");
+        var AvailableCoins = localStorage.getItem("availableVCoins");
+        var spend = TotalCoins - AvailableCoins;
+        var percentage = (spend / TotalCoins) * 100;
+        $(".progressrate")
+               .attr("aria-valuenow", percentage).css("width", percentage + "%");
+
+        var total = 0;
+        var spent = 0;
+        var balance = 0;
+
+        if (!isNaN(TotalCoins)) {
+            total = Math.round(TotalCoins);
+        }
+        if (!isNaN(spend)) {
+            spent = Math.round(spend);
+        }
+        if (!isNaN(AvailableCoins)) {
+            balance = Math.round(AvailableCoins);
+        }
+
+        $('#spanTotal').html(" " + total);
+        $('#spanSpent').html(" " + spent);
+        $('#spanBalance').html(" " + balance);
+    }
+
+    function MonthlyStats(btnSelectedRole, selectedVertical, selectedLocation) {
+        /******** Calculate Date **************/
+        var currentYear = (new Date).getFullYear();
+        var currentMonth = (new Date).getMonth() + 1;
+        currentMonth = GetMonthName(currentMonth)
+        var IdeaMonthYear = currentMonth + " " + currentYear;
+
+        var IdeaPosted = "IdeaPosted";
+        var IdeaNew = "NewIdeas";
+        var ChallengePosted = "ChallengePosted";
+        var ChallengeNew = "NewChallenges";
+        var IdeaTypeTop = "Ideas";
+        var IdeaTypeChallenges = "Challenges";
+        var listTitle = "Charts";
+
+
+        var leaderLocation = selectedLocation;
+        var leaderVertical = selectedVertical;
+
+        var camlQueryIdeas = "";
+        var camlQueryChallenges = "";
+
+        if (btnSelectedRole == "Vertical Leader") {
+
+            var tempRole = "Vertical Leader";
+            camlQueryIdeas = createCamlQueryStatics(tempRole, leaderLocation, leaderVertical, IdeaTypeTop);
+            camlQueryChallenges = createCamlQueryStatics(tempRole, leaderLocation, leaderVertical, IdeaTypeChallenges);
+        }
+        else {
+            camlQueryIdeas = createCamlQueryStatics(leaderrole, leaderLocation, leaderVertical, IdeaTypeTop);
+            camlQueryChallenges = createCamlQueryStatics(leaderrole, leaderLocation, leaderVertical, IdeaTypeChallenges);
+
+        }
+
+        /***********Get Count**********************/
+
+        //for posted ideas
+        //var IdeaPostedCount = getCountIdeaPosted(camlQueryIdeas, listTitle, IdeaPosted);
+        var IdeaStatus = "IdeasPosted";
+        var IdeaPostedCount = getCountIdea(IdeaMonthYear, IdeaStatus, btnSelectedRole, selectedVertical, selectedLocation);
+        if ((typeof IdeaPostedCount == 'undefined') || (!IdeaPostedCount)) {
+            IdeaPostedCount = "0";
+        }
+        //Parsing the int value
+        IdeaPostedCount = parseInt(IdeaPostedCount)
+        $('#IdeasPostedCount').text(IdeaPostedCount);
+
+        //For new ideas
+        var IdeaStatus = "NewIdeas";
+        var NewIdeas = getCountIdea(IdeaMonthYear, IdeaStatus, btnSelectedRole, selectedVertical, selectedLocation);
+        if ((typeof NewIdeas == 'undefined') || (!NewIdeas)) {
+            NewIdeas = "0";
+        }
+        $('#NewIdeasCount').text(NewIdeas);
+
+
+        //for challenge posted
+        var ChallengeStatus = "ChallengesPosted";
+        var challengeCount = getCountChallenge(IdeaMonthYear, ChallengeStatus, leaderLocation, leaderVertical, btnSelectedRole);
+        $('#ChallengesPostedCount').text(challengeCount);
+
+        //For new challenges
+        var newChallengeStatus = "NewChallenges";
+        var newChallenge = getCountChallenge(IdeaMonthYear, newChallengeStatus, leaderLocation, leaderVertical, btnSelectedRole);
+        if ((typeof newChallenge == 'undefined') || (!newChallenge)) {
+            newChallenge = "0";
+        }
+        $('#NewChallengesCount').text(newChallenge);
+
+
+        //For monthly statistics
+        var yearheading = "Year To Date";
+        $('#YearlyStatistics').text(yearheading);
+
+        var monthheading = "Month To Date";
+        $('#MonthlyStatistics').text(monthheading);
+
+
+    }
+    //Suman Code
+    function GetchartData(btnSelectedRole, selectedVertical, selectedLocation) {
+
+        var leaderLocation = selectedLocation;
+        var leaderVertical = selectedVertical;
+
+        //Only to get Ideas from chart list
+        var ideaType = "Ideas"
+
+
+        var camlQueryIdeas = "";
+
+        if (btnSelectedRole == "Vertical Leader") {
+            var tempRole = "Vertical Leader";
+            camlQueryIdeas = createCamlQueryStatics(tempRole, leaderLocation, leaderVertical, ideaType);
+        }
+        else {
+            camlQueryIdeas = createCamlQueryStatics(leaderrole, leaderLocation, leaderVertical, ideaType);
+        }
+
+        $().SPServices({
+            operation: "GetListItems",
+            async: false,
+            listName: "Charts",
+            //listName: "V-Ideas",
+            //CAMLQuery: "<Query></Query>",
+            CAMLQuery: camlQueryIdeas,
+            CAMLViewFields: "<ViewFields><FieldRef Name='Function' /><FieldRef Name='Location' /><FieldRef Name='InProgress' /><FieldRef Name='Completed' /><FieldRef Name='NewIdeas' /><FieldRef Name='BenefitInProgress' /><FieldRef Name='BenefitCompleted' /><FieldRef Name='TotalIdeas' /></ViewFields>",
+            CAMLRowLimit: 1,
+            completefunc: processData
+        });
+    }
+    //Suman Code
+    /* Functions */
+    function GetMonthName(monthNumber) {
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return months[monthNumber - 1];
+    };
+
+    /* Get Count of Ideas */
+    function getCountIdea(IdeaMonthYear, IdeaStatus, btnSelectedRole, selectedVertical, selectedLocation) {
+
+        //Added By Suman to filter based on dropdown
+        if (btnSelectedRole == "Vertical Leader") {
+            role = btnSelectedRole;
+        }
+        else {
+            role = leaderrole;
+        }
+
+        ItemCount = 0;
+        if (role == "Global Leader") {
+            ItemCount += parseInt(GetIdeaCount(IdeaMonthYear, IdeaStatus, selectedVertical, selectedLocation));
+
+        }
+        else if (role == "Functional Leader") {
+            ItemCount += parseInt(GetIdeaCount(IdeaMonthYear, IdeaStatus, selectedVertical, selectedLocation));
+
+        }
+
+        else if (role == "Central Leader") {
+            ItemCount += parseInt(GetIdeaCount(IdeaMonthYear, IdeaStatus, selectedVertical, selectedLocation));
+        }
+        else if (role == "Vertical Leader") {
+            ItemCount += parseInt(GetIdeaCount(IdeaMonthYear, IdeaStatus, selectedVertical, selectedLocation));
+        }
+
+        return ItemCount;
+    }
+
+    /* Get Count of Ideas */
+    function GetIdeaCount(IdeaMonthYear, IdeaStatus, selectedVertical, selectedLocation) {
+        ItemCount = 0;
+        var listname = "V-Ideas";
+        if (IdeaStatus == "IdeasPosted") {
+            var camlQuery = "";
+            if (role == "Global Leader") {
+                /* Showing all Ideas across in a location */
+                camlQuery = "<Query><Where><Neq><FieldRef Name='ID' /><Value Type='Number'>0</Value></Neq></Where></Query>";
+            }
+            else if (role == "Functional Leader") {
+                if ((typeof selectedVertical == 'undefined') || (selectedVertical=="Select Vertical")) {
+                    camlQuery = "<Query><Where><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + vertical + "</Value></Eq></Where></Query>";
+                }
+                else {
+                    camlQuery = "<Query><Where><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + selectedVertical + "</Value></Eq></Where></Query>";
+                }                
+            }
+            else if (role == "Central Leader") {
+                if ((typeof selectedLocation == 'undefined') || (selectedLocation == "Select Location")) {
+                    camlQuery = "<Query><Where><Eq><FieldRef Name='Location' /><Value Type='Text'>" + locatio + "</Value></Eq></Where></Query>";
+                }
+                else {
+                    camlQuery = "<Query><Where><Eq><FieldRef Name='Location' /><Value Type='Text'>" + selectedLocation + "</Value></Eq></Where></Query>";
+                }
+                
+            }
+            else if (role == "Vertical Leader") {
+                if ((selectedVertical == "Select Vertical") || (selectedLocation == "Select Location") || (typeof selectedVertical == 'undefined') || (typeof selectedLocation == 'undefined')) {
+                    camlQuery = "<Query><Where><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + locatio + "</Value></Eq><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + vertical + "</Value></Eq></And></Where></Query>";
+                }
+                else {
+                    camlQuery = "<Query><Where><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + selectedLocation + "</Value></Eq><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + selectedVertical + "</Value></Eq></And></Where></Query>";
+                }                
+            }
+
+            $().SPServices({
+                operation: "GetListItems",
+                async: false,
+                listName: listname,
+                CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='Modified' /></ViewFields>",
+                CAMLQuery: camlQuery,
+                completefunc: function (xData, Status) {
+
+                    ItemCount = $(xData.responseXML).SPFilterNode("rs:data").attr("ItemCount");
+                    if (isNaN(ItemCount)) {
+                        ItemCount = 0;
+                    }
+                }
+            });
+
+        }
+        else {
+            var camlQuery = "";
+            camlQuery = "<Query><Where><And><Eq><FieldRef Name='IdeaMonthYear' /><Value Type='Text'>" + IdeaMonthYear + "</Value></Eq>";
+
+            if (role == "Global Leader") {
+                /* Showing all Ideas across in a location */
+                camlQuery += "<Neq><FieldRef Name='ID' /><Value Type='Number'>0</Value></Neq>";
+
+            }
+            else if (role == "Functional Leader") {
+                //camlQuery += "<Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + vertical + "</Value></Eq></And></Where></Query>";
+                if ((typeof selectedVertical == 'undefined') || (selectedVertical == "Select Vertical")) {
+                    camlQuery += "<Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + vertical + "</Value></Eq>";
+                }
+                else {
+                    camlQuery += "<Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + selectedVertical + "</Value></Eq>";
+                }
+            }
+            else if (role == "Central Leader") {
+                //camlQuery += "<Eq><FieldRef Name='Location' /><Value Type='Text'>" + locatio + "</Value></Eq></And></Where></Query>";
+                if ((typeof selectedLocation == 'undefined') || (selectedLocation == "Select Location")) {
+                    camlQuery += "<Eq><FieldRef Name='Location' /><Value Type='Text'>" + locatio + "</Value></Eq>";
+                }
+                else {
+                    camlQuery += "<Eq><FieldRef Name='Location' /><Value Type='Text'>" + selectedLocation + "</Value></Eq>";
+                }
+            }
+            else if (role == "Vertical Leader") {
+                //camlQuery += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + locatio + "</Value></Eq><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + vertical + "</Value></Eq></And></And></Where></Query>";
+                if ((selectedVertical == "Select Vertical") || (selectedLocation == "Select Location") || (typeof selectedVertical == 'undefined') || (typeof selectedLocation == 'undefined')) {
+                    camlQuery += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + locatio + "</Value></Eq><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + vertical + "</Value></Eq></And>";
+                }
+                else {
+                    camlQuery += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + selectedLocation + "</Value></Eq><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + selectedVertical + "</Value></Eq></And>";
+                }
+            }
+            camlQuery += "</And></Where></Query>";
+
+            $().SPServices({
+                operation: "GetListItems",
+                async: false,
+                listName: listname,
+                CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='Modified' /></ViewFields>",
+                CAMLQuery: camlQuery,
+                completefunc: function (xData, Status) {
+
+                    ItemCount = $(xData.responseXML).SPFilterNode("rs:data").attr("ItemCount");
+                    if (isNaN(ItemCount)) {
+                        ItemCount = 0;
+                    }
+
+                }
+            });
+        }
+
+        return ItemCount;
+
+    };
+
+    /* Get Count of Ideas */
+    function GetCountIdeaProgress(IdeaStatus, selectedVertical, selectedLocation) {
+        ItemCount = 0;
+        var completed = "Completed";
+        ////int totalIdeas = 0;
+        var rejectedAtL1 = "Rejected at L1";
+        var rejectedAtL2 = "Rejected at L2";
+        var rejectedAtL3 = "Rejected at L3";
+        var rejectedAtF1 = "Rejected at F1";
+        var rejectedAtF2 = "Rejected at F2";
+        var rejectedAtF3 = "Rejected at F3";
+
+        var listname = "V-Ideas";
+        if (IdeaStatus == "IdeasPosted") {
+            var camlQuery = "";
+            if (role == "Global Leader") {
+                /* Showing all Ideas across in a location */
+                camlQuery = "<Query><Where><Neq><FieldRef Name='IdeaStatus' /><Value Type='Text'>"+rejectedAtL1+"</Value></Neq></Where></Query>";
+            }
+            else if (role == "Functional Leader") {
+                    camlQuery = "<Query><Where><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + selectedVertical + "</Value></Eq></Where></Query>";
+            }
+            else if (role == "Central Leader") {
+                    camlQuery = "<Query><Where><Eq><FieldRef Name='Location' /><Value Type='Text'>" + selectedLocation + "</Value></Eq></Where></Query>";
+
+            }
+            else if (role == "Vertical Leader") {
+                    camlQuery = "<Query><Where><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + selectedLocation + "</Value></Eq><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + selectedVertical + "</Value></Eq></And></Where></Query>";
+            }
+
+            $().SPServices({
+                operation: "GetListItems",
+                async: false,
+                listName: listname,
+                CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='Modified' /></ViewFields>",
+                CAMLQuery: camlQuery,
+                completefunc: function (xData, Status) {
+
+                    ItemCount = $(xData.responseXML).SPFilterNode("rs:data").attr("ItemCount");
+                    if (isNaN(ItemCount)) {
+                        ItemCount = 0;
+                    }
+                }
+            });
+        }        
+        return ItemCount;
+
+    };
+
+
+    /* Get Count of Challenges */
+    function getCountChallenge(ChallengeMonthYear, ChallengeStatus, locatio, vertical, btnSelectedRole) {
+        var query = "<Query><Where>";
+        drs = checkDr();
+
+        //Added By Suman to filter based on dropdown
+        if (btnSelectedRole == "Vertical Leader") {
+            role = btnSelectedRole;
+        }
+        else {
+            role = leaderrole;
+        }
+
+        ItemCount = 0;
+        var camlQuery = "";
+        if (ChallengeStatus == "ChallengesPosted") {
+
+            if (role == "Global Leader") {
+                query += fetchDatafromConfigList("Global Leader Query");
+            }
+            else if (role == "Functional Leader") {
+                query += fetchDatafromConfigList("Functional Leader Query");
+                query = query.replace(/vertical/g, vertical);
+                query = query.replace(/drs/g, drs);
+            }
+            else if (role == "Central Leader") {
+                query += fetchDatafromConfigList("Central Leader Query");
+                query = query.replace(/locatio/g, locatio);
+                query = query.replace(/drs/g, drs);
+            }
+            else if (role == "Vertical Leader") {
+                //query += fetchDatafromConfigList("Vertical Leader Query New");
+                query += fetchDatafromConfigList("None");
+                query = query.replace(/locatio/g, locatio);
+                query = query.replace(/vertical/g, vertical);
+                query = query.replace(/drs/g, drs);
+            }
+            //else if (role == "Approver") {
+            //    query += fetchDatafromConfigList("Approver Challenge Query");
+            //    query = query.replace(/locatio/g, locatio);
+            //    query = query.replace(/vertical/g, vertical);
+
+            //}
+            //else if (role == "Ideator") {
+            //    if (!(drs) && (flagGBand == false)) {
+            //        query += fetchDatafromConfigList("None");
+            //        query = query.replace(/locatio/g, locatio);
+            //        query = query.replace(/vertical/g, vertical);
+
+            //    }
+            //    else if (!(drs) && (flagGBand == true)) {
+            //        query += fetchDatafromConfigList("Only GBand");
+            //        query = query.replace(/locatio/g, locatio);
+            //        query = query.replace(/vertical/g, vertical);
+            //    }
+            //    else if ((drs) && (flagGBand == true)) {
+            //        query += fetchDatafromConfigList("DR and GBand");
+            //        query = query.replace(/locatio/g, locatio);
+            //        query = query.replace(/vertical/g, vertical);
+            //        query = query.replace(/drs/g, drs);
+            //    }
+            //    else if ((drs) && (flagGBand == false)) {
+            //        query += fetchDatafromConfigList("Only DR");
+            //        query = query.replace(/locatio/g, locatio);
+            //        query = query.replace(/vertical/g, vertical);
+            //        query = query.replace(/drs/g, drs);
+            //    }
+            //}
+            query += "</Where></Query>";
+            $().SPServices({
+                operation: "GetListItems",
+                async: false,
+                listName: "Challenges",
+                CAMLQuery: query,
+                CAMLViewFields: "<ViewFields><FieldRef Name='Title' /></ViewFields>",
+                completefunc: function (xData, Status) {
+
+                    ItemCount = $(xData.responseXML).SPFilterNode("rs:data").attr("ItemCount");
+                }
+            });
+        }
+        else {
+            query += "<And><Eq><FieldRef Name='ChallengeMonthYear' /><Value Type='Text'>" + ChallengeMonthYear + "</Value></Eq>"
+
+            if (role == "Global Leader") {
+                query += fetchDatafromConfigList("Global Leader Query");
+            }
+            else if (role == "Functional Leader") {
+                query += fetchDatafromConfigList("Functional Leader Query");
+                query = query.replace(/vertical/g, vertical);
+                query = query.replace(/drs/g, drs);
+            }
+            else if (role == "Central Leader") {
+                query += fetchDatafromConfigList("Central Leader Query");
+                query = query.replace(/locatio/g, locatio);
+                query = query.replace(/drs/g, drs);
+            }
+            else if (role == "Vertical Leader") {
+                //query += fetchDatafromConfigList("Vertical Leader Query New");
+                query += fetchDatafromConfigList("None");
+                query = query.replace(/locatio/g, locatio);
+                query = query.replace(/vertical/g, vertical);
+                query = query.replace(/drs/g, drs);
+            }
+
+            //else if (role == "Ideator") {
+            //    if (!(drs) && (flagGBand == false)) {
+            //        query += fetchDatafromConfigList("None");
+            //        query = query.replace(/locatio/g, locatio);
+            //        query = query.replace(/vertical/g, vertical);
+
+            //    }
+            //    else if (!(drs) && (flagGBand == true)) {
+            //        query += fetchDatafromConfigList("Only GBand");
+            //        query = query.replace(/locatio/g, locatio);
+            //        query = query.replace(/vertical/g, vertical);
+            //    }
+            //    else if ((drs) && (flagGBand == true)) {
+            //        query += fetchDatafromConfigList("DR and GBand");
+            //        query = query.replace(/locatio/g, locatio);
+            //        query = query.replace(/vertical/g, vertical);
+            //        query = query.replace(/drs/g, drs);
+            //    }
+            //    else if ((drs) && (flagGBand == false)) {
+            //        query += fetchDatafromConfigList("Only DR");
+            //        query = query.replace(/locatio/g, locatio);
+            //        query = query.replace(/vertical/g, vertical);
+            //        query = query.replace(/drs/g, drs);
+            //    }
+            //}
+            query += "</And></Where></Query>";
+
+
+
+            $().SPServices({
+                operation: "GetListItems",
+                async: false,
+                listName: "Challenges",
+                CAMLViewFields: "<ViewFields><FieldRef Name='Title' /></ViewFields>",
+                CAMLQuery: query,
+                completefunc: function (xData, Status) {
+                    ItemCount = $(xData.responseXML).SPFilterNode("rs:data").attr("ItemCount");
+                }
+            });
+        }
+        return ItemCount;
+    };
+
+    function createCamlQueryStatics(role, location, vertical, ideaType) {
+        var camlQuery = "<Query><Where>";
+        if (role == "Global Leader") {
+            camlQuery += "<And><Eq><FieldRef Name='Title' /><Value Type='Text'>" + ideaType + "</Value></Eq><And><Eq><FieldRef Name='Function' /><Value Type='Text'>All</Value></Eq><Eq><FieldRef Name='Location' /><Value Type='Text'>All</Value></Eq></And></And>"
+        }
+        else if (role == "Functional Leader") {
+            camlQuery += "<And><Eq><FieldRef Name='Title' /><Value Type='Text'>" + ideaType + "</Value></Eq><And><Eq><FieldRef Name='Function' /><Value Type='Text'>" + vertical + "</Value></Eq><Eq><FieldRef Name='Location' /><Value Type='Text'>All</Value></Eq></And></And>"
+        }
+        else if (role == "Vertical Leader") {
+            camlQuery += "<And><Eq><FieldRef Name='Title' /><Value Type='Text'>" + ideaType + "</Value></Eq><And><Eq><FieldRef Name='Function' /><Value Type='Text'>" + vertical + "</Value></Eq><Eq><FieldRef Name='Location' /><Value Type='Text'>" + location + "</Value></Eq></And></And>"
+        }
+        else if (role == "Central Leader") {
+            camlQuery += "<And><Eq><FieldRef Name='Title' /><Value Type='Text'>" + ideaType + "</Value></Eq><And><Eq><FieldRef Name='Function' /><Value Type='Text'>All</Value></Eq><Eq><FieldRef Name='Location' /><Value Type='Text'>" + location + "</Value></Eq></And></And>"
+        }
+        camlQuery += "</Where><OrderBy><FieldRef Name='TotalIdeas' Ascending='false'/></OrderBy></Query>";
+        return camlQuery;
+    }
+
+    function createCamlQueryStaticsCharts(role, location, vertical, ideaType) {
+        var camlQuery = "<Query><Where>";
+        if (role == "Global Leader") {
+            camlQuery += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>All</Value></Eq><Eq><FieldRef Name='Location' /><Value Type='Text'>All</Value></Eq></And>"
+        }
+        else if (role == "Functional Leader") {
+            camlQuery += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + vertical + "</Value></Eq><Eq><FieldRef Name='Location' /><Value Type='Text'>All</Value></Eq></And>"
+        }
+        else if (role == "Vertical Leader") {
+            camlQuery += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + vertical + "</Value></Eq><Eq><FieldRef Name='Location' /><Value Type='Text'>" + location + "</Value></Eq></And>"
+        }
+        else if (role == "Central Leader") {
+            camlQuery += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>All</Value></Eq><Eq><FieldRef Name='Location' /><Value Type='Text'>" + location + "</Value></Eq></And>"
+        }
+        camlQuery += "</Where><OrderBy><FieldRef Name='Modified' Ascending='false'/></OrderBy></Query>";
+        return camlQuery;
+    }
+
+
+
+    //Suman Code ends here
+
+    /* Show Challenge Details */
+    function ShowChallengeDetails(challengeID) {
+        var getText = "";
+        $("#myTableChallenge").empty();
+        var query = "<Query><Where><Eq><FieldRef Name='ID'/><Value Type='Number'>" + challengeID + "</Value></Eq></Where></Query>"
+        $().SPServices({
+            operation: "GetListItems",
+            async: false,
+            listName: "Challenges",
+            CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='Description' /></ViewFields>",
+            CAMLQuery: query,
+            completefunc: function (xData, Status) {
+                $(xData.responseXML).SPFilterNode("z:row").each(function () {
+                    var ChallengeID = $(this).attr("ows_ID");
+                    var ChallengeTitle = $(this).attr("ows_Title");
+                    var ChallengeDesc = $(this).attr("ows_Description");
+                    getText = "<div class='popupBigBox'><div class='dividerLine'> </div> <div class='popupSmBoxContent text-left'> <p><b> Challenge " + ChallengeID + ": " + ChallengeTitle + " </b></p> <p>" + ChallengeDesc + "</p> </div> <div class='popupBottmBttnDivider'><div type='button' class='bttnComman bttnPurple'   data-dismiss='modal'>Ok<span class='leftTop'></span> <span class='rightTop'></span><span class='rightBottom'> </span><span class='leftBottom'></span></div></div> </div>";
+                });
+            }
+        });
+
+        $("#myTableChallenge").append(getText);
+        $("#myModalChallenge").modal();
+    }
+
+
+    //For getting new challenges
+    function getListData(btnSelectedRole, selectedVertical, selectedLocation) {
+
+        //First get drs
+        drs = checkDr();
+
+        //Added By Suman to filter based on dropdown
+        if (btnSelectedRole == "Vertical Leader") {
+            role = btnSelectedRole;
+        }
+        else {
+            role = leaderrole;
+        }
+
+        //Get the current vertical and location
+        vertical = selectedVertical;
+        locatio = selectedLocation;
+
+        var query = "<Query><Where>";
+
+        if (role == "Global Leader") {
+            query += fetchDatafromConfigList("Global Leader Query");
+        }
+        else if (role == "Functional Leader") {
+            query += fetchDatafromConfigList("Functional Leader Query");
+            query = query.replace(/vertical/g, vertical);
+            query = query.replace(/drs/g, drs);
+        }
+        else if (role == "Central Leader") {
+            query += fetchDatafromConfigList("Central Leader Query");
+            query = query.replace(/locatio/g, locatio);
+            query = query.replace(/drs/g, drs);
+        }
+        else if (role == "Vertical Leader") {
+            query += fetchDatafromConfigList("Vertical Leader");
+            query = query.replace(/locatio/g, locatio);
+            query = query.replace(/vertical/g, vertical);
+            query = query.replace(/drs/g, drs);
+        }
+
+        query += "</Where><OrderBy><FieldRef Name='Created' Ascending='False' /></OrderBy></Query>";
+
+        $().SPServices({
+            operation: "GetListItems",
+            async: false,
+            listName: "Challenges",
+            CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='PictureURL' /><FieldRef Name='Author' /></ViewFields>",
+            //CAMLQueryOptions: "<QueryOptions><ExpandUserField>True</ExpandUserField></QueryOptions>",
+            CAMLQuery: query,
+            CAMLRowLimit: 2,
+            completefunc: function (xData, Status) {
+                $(xData.responseXML).SPFilterNode("z:row").each(function () {
+
+                    var title = ($(this).attr("ows_Title"));
+                    var CreatedBy = ($(this).attr("ows_Author"));
+                    var arrCreatedBy = CreatedBy.split('#');
+                    var ChallengeID = $(this).attr("ows_ID");
+                    var arrCreatedByForID = CreatedBy.split(';');
+                    var Author = arrCreatedBy[1];
+                    var res = Author.split('Vodafone');
+                    var res1 = res[0];
+                    var AuthorUserID = arrCreatedByForID[0];
+
+                    var ImageUrl = $(this).attr("ows_PictureURL");
+                    if (i == 0) {
+                        $("#ImgAuthor1").attr("src", ImageUrl);
+                        //$("#ChallengeAuthor1").html(Author);
+                        if (title.length > 35) {
+                            title = title.substring(0, 35) + ' ...';
+                        }
+                        $("#ChallengeTitle1").html("<a href='#' id=myChallenge" + ChallengeID + " onclick='ShowChallengeDetails(\"" + ChallengeID + "\" )'>'" + title + "'</a>");
+                        $("#ChallengeAuthor1").html(res1);
+                    }
+                    if (i == 1) {
+                        $("#ImgAuthor2").attr("src", ImageUrl);
+                        //$("#ChallengeAuthor2").html(Author);
+                        if (title.length > 35) {
+                            title = title.substring(0, 35) + ' ...';
+                        }
+                        $("#ChallengeTitle2").html("<a href='#' id=myChallenge" + ChallengeID + " onclick='ShowChallengeDetails(\"" + ChallengeID + "\" )'>'" + title + "'</a>");
+                        $("#ChallengeAuthor2").html(res1);
+                    }
+                    i++;
+
+                });
+            }
+        });
+
+    }
+
+</script>
+
+<div id="global" class="banner">
+
+    <table style="width: 220px;">
+        <tr>
+            <td>
+                <div id="owlchart">
+                </div>
+
+            </td>
+            <td>
+                <div id="owlFundingschart">
+                </div>
+            </td>
+        </tr>
+    </table>
+
+</div>
+<div class="component">
+    <span class="top-left"></span>
+    <span class="top-right"></span>
+    <span class="bottom-left"></span>
+    <span class="bottom-right"></span>
+    <div id="Box1" class="section" style="width: 238px !important">
+        <div class="title">
+            <span id="YearlyStatistics" class="title"></span>
+            <span id="MonthlyStatistics" class="title pull-right"></span>
+
+        </div>
+        <div class="section-inner">
+            <div class="topsection">
+                <div class="left-box">
+                    <a id="IdeasPosted" href="/group/thinkbox/Pages/MyIdeaDetails.aspx"><span id="IdeasPostedCount" class="figure"></span></a><span style="padding: 0 15px;" class="post-idea">Ideas Posted
+                    </span>
+                </div>
+                <div class="right-box">
+                    <a id="NewIdeasPosted" href="/group/thinkbox/Pages/MyIdeaDetails.aspx"><span id="NewIdeasCount" class="figure"></span></a><span style="padding: 0px 20px;" class="post-idea">New Ideas </span>
+                </div>
+                <div class="bottom-left-box">
+                    <a id="ChallengesPosted" href="/group/thinkbox/Pages/Challenges.aspx#otherChallenge"><span id="ChallengesPostedCount" class="figure"></span></a><span class="post-idea">Challenges
+                        Posted </span>
+                </div>
+                <div class="bottom-right-box">
+                    <a id="NewChallengesPosted" href="/group/thinkbox/Pages/Challenges.aspx#otherChallenge"><span id="NewChallengesCount" class="figure"></span></a><span class="post-idea">New Challenges
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="section box2">
+        <div class="title">
+            Investment
+        </div>
+        <div class="section-inner">
+            <div class="total">
+                Total :
+            </div>
+            <div class="img-k">
+                <span>
+                    <img src="/group/thinkbox/Style%20Library/Images/rupees_icon.png" /><label
+                        id="spanTotal"></label></span>
+            </div>
+            <div class="progressbar">
+                <span class="progressrate"></span>
+            </div>
+            <div class="bottom-left-box">
+                <div class="img-k">
+                    <div class="br-right">
+                        <img src="/group/thinkbox/Style%20Library/Images/rupees_icon.png" /><label
+                            id="spanSpent"></label>
+                        <span class="post-idea spend-txt">Spent</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bottom-right-box">
+                <div class="img-k">
+                    <span class="pull-right">
+                        <img src="/group/thinkbox/Style%20Library/Images/rupees_icon.png" /><label
+                            id="spanBalance"></label></span> <span class="post-idea balance-txt">Balance </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="section br-none box3">
+        <div class="title">
+            New Challenges
+        </div>
+        <div class="section-inner">
+            <div class="media">
+                <div class="media-left">
+                    <div class="profile-pic-home"></div>
+                    <a href="#">
+                        <img class="media-object profile-radius" id="ImgAuthor1" src="" style="height: 50px; width: 50px;">
+                    </a>
+                </div>
+                <div class="media-body">
+                    <h4 class="media-heading">
+                        <label id="ChallengeAuthor1" class="MRBNONE">
+                        </label>
+                    </h4>
+
+                    <label id="ChallengeTitle1" style="font-weight: normal">
+                    </label>
+                </div>
+            </div>
+            <div class="media">
+                <div class="media-left">
+                    <div class="profile-pic-home"></div>
+                    <a href="#">
+                        <img class="media-object profile-radius" id="ImgAuthor2" src="" style="height: 50px; width: 50px;" />
+                    </a>
+                </div>
+                <div class="media-body">
+                    <h4 class="media-heading">
+                        <label id="ChallengeAuthor2" class="MRBNONE">
+                        </label>
+                    </h4>
+
+                    <label id="ChallengeTitle2" style="font-weight: normal">
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--------------POst an Idea Slider----------------->
+<div id="demo" class="container sidebar sidebar-left" style="LEFT: -85%" data-status="closed">
+    <div class="tab-content">
+
+
+        <div id="PostIdea" class="tab-pane fade in active">
+            <!-- Modal -->
+            <div id="PIdea" class="pi-wrapper post-idea-inner">
+                <!-- <h2>
+                    Post Idea</h2>-->
+                <div class="col-xs-12 col-md-12 index PNONE">
+                    <label for="Title" class="postIdeaTitle">
+                        Title</label>
+                    <!-- <input  maxlength="200" class="form-control" type="text" /> -->
+                    <div class="inputNew width100per">
+                        <input id="IdeaName" name="txtTitle" maxlength="200" value="Enter Title" onfocus="if(this.value=='Enter Title')this.value='';"
+                            onblur="if(this.value=='')this.value='Enter Title';" type="text" class="width100per" />
+                        <b id="valIdeaTitle" style="color: red; display: none">Please Enter Idea Title</b>
+                    </div>
+                </div>
+                <div class="char-count" id="countTitle">
+                    200 characters left
+                </div>
+                <div class="col-xs-12 col-md-12 index  PNONE">
+                    <label for="des" class="postIdeaTitle">
+                        Description</label>
+                    <div class="inputNew width100per height100">
+                        <textarea class="width100per height100per form-control" id="IdeaDesc" class="" rows="3"
+                            cols="50" onfocus="if(this.value=='Enter Description')this.value='';" onblur="if(this.value=='')this.value='Enter Description';">Enter Description</textarea>
+                        <b id="valIdeaDescription" style="color: red; display: none">Please Enter Idea Description</b>
+                        <b id="valIdeaDescriptionLength" style="color: red; display: none">Idea Description should not be greater than 600 characters</b>
+                    </div>
+                    <div class="char-count" id="countdes">
+                        600 characters left
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-12 index  PNONE">
+                    <label for="des" class="postIdeaTitle">
+                        Estimated Benefits</label>
+                    <b id="valEstimatedHoursCost" style="color: red; display: none">Please Enter Estimated Hours or Estimated cost benefits</b>
+                </div>
+                <div class='row'>
+                    <div class='col-md-4 MNONE paddingRight'>
+                        <label for="des" class="postIdeaTitle">
+                            Hours</label>
+                        <div class="inputNew width100per">
+                            <input id="EstimatedHours" maxlength="4" value="Number of hours saved per month"
+                                onfocus="if(this.value=='Number of hours saved per month')this.value='';" onblur="if(this.value=='')this.value='Number of hours saved per month';"
+                                class="form-control   height29Input" type="text" onkeypress='validate(event)' />
+                        </div>
+                    </div>
+                    <div class='col-md-1 font-14 PNONE andORTxt text-center'>
+                        <label for="des" class="postIdeaTitle blankLabel">
+                            blank</label><div>
+                                and/or
+                            </div>
+                    </div>
+                    <div class='col-md-3 PNONE marginRight5 displayInlineBlock'>
+                        <label class="postIdeaTitle">
+                            Cost</label><div class='FormInputBox width100per height29Input'>
+                                <select id="Currency" class="form-control">
+                                    <option value="SEL">Select Currency</option>
+                                    <option value="INR">INR</option>
+                                    <option value="EGP">EGP</option>
+                                    <!-- <option value="RON">RON</option>-->
+                                    <option value="RON">EURO</option>
+                                    <option value="HUF">HUF</option>
+                                </select>
+                                <b id="valCurrency" style="color: red; display: none">Please select currency</b>
+                            </div>
+                    </div>
+                    <div class='col-md-3'>
+                        <label for="des" class="postIdeaTitle blankLabel">
+                            blank
+                        </label>
+                        <div class="inputNew width100per">
+                            <input id="EstimatedCost" maxlength="10" class="form-control   height29Input" value="Estimated cost benefits"
+                                onfocus="if(this.value=='Estimated cost benefits')this.value='';" onblur="if(this.value=='')this.value='Estimated cost benefits';"
+                                onkeypress='validate(event)' />
+                        </div>
+                    </div>
+                </div>
+                <div class='row' id="crossFunctionSelectionDiv">
+                    <div class="char-count blankLabel">
+                        blank
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-12 col-md-12 index marginTop">
+                            <div class="overflowHidden clear">
+                                <div style="margin-top: 8px;" class='col-md-3 PNONE marginRight5 displayInlineBlock'>
+
+                                    <span class="FormInputBox width100per height29Input outside-function">
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" value="Cross" id="chkCrossfunction"></label>
+                                    </span>
+                                    <label for="service line" class="postIdeaTitle">
+                                        Outside Function</label>
+                                </div>
+                                <div class='col-md-3 col-md-offset-1 PNONE marginRight5 displayInlineBlock' id="CrossFunctiondiv"
+                                    style="display: none">
+                                    <label for="service line" class="postIdeaTitle">
+                                    </label>
+                                    <div class='FormInputBox width100per height29Input'>
+                                        <select class="form-control" id="CrossFunctionVertical">
+                                            <option></option>
+                                        </select>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class='row'>
+                    <div class="char-count blankLabel">
+                        blank
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-12 col-md-12 index marginTop">
+                            <div class="overflowHidden clear">
+                                <div class='col-md-3 PNONE marginRight5 displayInlineBlock'>
+                                    <label for="service line" class="postIdeaTitle">
+                                        Service Line</label>
+                                    <div class="FormInputBox width100per height29Input">
+                                        <select class="form-control" id="IdeaServiceLine">
+                                            <option></option>
+                                        </select>
+                                    </div>
+                                    <b id="valIdeaServiceLine" style="color: red; display: none">Please Select Idea Service Line</b>
+                                </div>
+                                <div class='col-md-3 col-md-offset-1 PNONE marginRight5 displayInlineBlock'>
+                                    <label for="ser" class="postIdeaTitle">
+                                        Service</label>
+                                    <div class='FormInputBox width100per height29Input'>
+                                        <select class="form-control" id="IdeaService">
+                                            <option></option>
+                                        </select>
+                                    </div>
+                                    <b id="valIdeaService" style="color: red; display: none">Please Select Idea Service</b>
+                                </div>
+                                <div class='col-md-3 col-md-offset-1 PNONE marginRight5 displayInlineBlock'>
+                                    <label for="ser" class="postIdeaTitle">
+                                        Location</label>
+                                    <div class='FormInputBox width100per height29Input'>
+                                        <select class="form-control" id="IdeaLocation">
+                                            <option></option>
+                                        </select>
+                                    </div>
+                                    <b id="valIdeaLocation" style="color: red; display: none">Please Select Idea Location</b>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="OpenChallengeLink">
+                    <div class="char-count blankLabel">
+                        blank
+                    </div>
+                    <div class="col-xs-12 col-md-12 index marginTop">
+                        <label for="Idea" class="MNONE" style="padding-right: 5px">
+                            Want to tag this idea to leader's challenge? View
+                        </label>
+                        <a href="#" id="OpenChallenge" class='font-18 underline'><b>Open challenges
+                        </b></a>
+                    </div>
+                </div>
+                <!--
+                <div  class="full-width margin-width">
+                    
+                </div> -->
+                <div class="row">
+                </div>
+                <div id="TagChallengeLink" class="form-group tagIdeaMsg">
+
+                    <label>
+                        Idea will be tagged to challenge:<span id="TagChallengeLinkID"></span> <span id="TagChallengeTitle"></span>
+                    </label>
+                    <button type="button" class="close" onclick="Confirm()">
+                        &times;</button>
+                </div>
+                <div class="row">
+                    <div id="submit" class="bttnComman bttnPurple  pull-right bttnMarginSD">
+                        Submit  
+                    </div>
+                    <div id="btnReset" class="bttnComman bttnPurple pull-right bttnMarginSD">
+                        Reset  
+                    </div>
+                    <input type="hidden" value="" id='hdnIdeaStatus' />
+                </div>
+            </div>
+        </div>
+
+        <!--Start Code Suman -->
+        <div style="overflow: hidden; top: 5%;" class="modal fade" id="myModal" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">
+                            &times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="min-height: auto; max-height: 500px; overflow-x: hidden;" id="MainModalBody">
+                        </div>
+                    </div>
+                    <div class="modal-footer" id="MainModalFooter" style="text-align: center">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">
+                            Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="AlertModal" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">
+                            &times;</button>
+                    </div>
+                    <div class="modal-body" id="AlertModalBody">
+					
+                    </div> 
+                    <div class="modal-footer" id="AlertModalFooter" style="text-align: center">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="myModalChallenge" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            &times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="myTableChallenge">
+                        </div>
+                        <div class="modal-footer">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="pageloaddiv">
+            <!--<img id="img-spinner" src="/group/thinkbox/Style%20Library/Images/loadingstyle.gif"  alt="Loading" /> -->
+        </div>
+        <div id="showLoadingText"></div>
+
+    </div>
+
+    <div class="toggler"><span class="bulb" style="display: block;"></span><span class="glyphicon glyphicon-chevron-left" style="display: none"></span></div>
+</div>
+
+<style>
+    .sidebar {
+        width: 1000px;
+    }
+</style>
+<!---------------End of Slider---------------------->
+<head><title>LeaderHome</title></head>
