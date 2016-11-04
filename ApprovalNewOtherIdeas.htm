@@ -255,7 +255,7 @@
 
                                             </div>
                                             <div class="col-xs-6 col-md-6 PNONE ">
-                                                <label>CI/Non-CI:</label>
+                                                <label>*CI/Non-CI:</label>
                                                 <div class="input-round">
                                                     <div class="input-top">
                                                         <select id="list_CI_NonCI">
@@ -263,6 +263,7 @@
                                                             <option value="CI">CI</option>
                                                             <option value="Non-CI">Non-CI</option>
                                                         </select>
+                                                        <b id="valCINonCI" style="color: red; display: none">Please Select CI/NonCI.</b>
                                                     </div>
                                                 </div>
                                             </div>
@@ -320,7 +321,21 @@
                                                     <div class="input-top">
 
                                                         <select id="list_CategoryL2ImplementationLevel"></select>
-                                                        <b id="vallist_CategoryL2ImplementationLevel" style="color: red; display: none">Please Enter Category Implementation Level.</b>
+                                                        <b id="vallist_CategoryL2ImplementationLevel" style="color: red; display: none">Please Enter Time required for implementation</b>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-xs-6 col-md-6 PNONE ">
+                                                <label>*CI/Non-CI: </label>
+                                                <div class="input-round">
+                                                    <div class="input-top">
+                                                        <select id="list_CI_NonCI_L2">
+                                                            <option value="Select">Please Select</option>
+                                                            <option value="CI">CI</option>
+                                                            <option value="Non-CI">Non-CI</option>
+                                                        </select>
+                                                        <b id="valCINonCIL2" style="color: red; display: none">Please Select CI/NonCI.</b>
                                                     </div>
                                                 </div>
                                             </div>
@@ -336,18 +351,6 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-xs-6 col-md-6 PNONE ">
-                                                <label>CI/Non-CI: </label>
-                                                <div class="input-round">
-                                                    <div class="input-top">
-                                                        <select id="list_CI_NonCI_L2">
-                                                            <option value="Select">Please Select</option>
-                                                            <option value="CI">CI</option>
-                                                            <option value="Non-CI">Non-CI</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
                                             <br />
                                             <div class="col-xs-12 col-md-12 PNONE ">
 
@@ -355,7 +358,7 @@
                                                 <div class="input-round width-100">
 
                                                     <textarea id="txt_L2EffortCostInvolved" rows='3' required></textarea>
-                                                    <b id="valtxt_L2EffortCostInvolved" style="color: red; display: none">Please Enter Category Opportunity Type.</b>
+                                                    <b id="valtxt_L2EffortCostInvolved" style="color: red; display: none">Please Enter Estimated cost involved in implementation.</b>
 
                                                 </div>
                                             </div>
@@ -369,7 +372,8 @@
                                                 <div class="input-round">
 
                                                     <input id="dtL2ActualDateCompletion" type="text" class="form-control" onkeypress='validate(event)' onpaste='JavaScript:return RestrictCopyPaste();' />
-
+                                                    <b id="valdtL2ExpectedDateCompletion" style="color: red; display: none">Actual date should not be Greater than current date.</b>
+                                                    <b id="valdtL2FinancialDate" style="color: red; display: none">Please Enter Current Financial Year Value</b>
                                                 </div>
                                             </div>
 
@@ -686,9 +690,10 @@
             <div class="mycallenges-wrapper pi-wrapper bg-inner-grey" style="overflow: hidden; padding-right: 0px; height: 415px!important;">
 
                 <div class="padding-outer">
-                    <div id='MyIdeaTable' class='filter-panel filter-wrapper'>
-
-                        <div class="">
+                    <div class='filter-panel filter-wrapper'>
+					
+					<div id='MyIdeaTable' style="width:50%;float:left" >
+                        
                             <label id="lblUserVertical">Vertical</label>
 
                             <div class="input-round">
@@ -700,19 +705,20 @@
                             <label id="lblUserServiceLine">ServiceLine</label>
 
                             <div class="input-round">
-
                                 <select id="UserServiceLine" class="UserServiceLine">
                                 </select>
                             </div>
-
-                            <input type="button" id="filter" class="bttnComman bttnPurple MNONE pull-right" onclick='GetFilteredData()' value="Search" />
-
-                        </div>
-                        <label id="lblTextID">Text/ID</label>
-                        <div class="input-round">
-                            <input style="width:85px!important;" type="text" class="form-control" id="txtSearch" />
-                        </div>
+						</div>
+						 <div style="float:left">
+							<label id="lblTextID">Text/ID</label>
+							<div class="input-round">
+								<input style="width: 85px!important;" type="text" class="form-control" id="txtSearch" />
+							</div> &nbsp;
+							<input type="button" id="filter" class="bttnComman bttnPurple MNONE pull-right" onclick='GetFilteredData()' value="Search" />
+						</div>
+						 
                     </div>
+						
                 </div>
 
                 <div id="NewIdeasTable" class="apperover-child approval-idea-childset" style="padding-right: 0">
@@ -755,7 +761,6 @@
 
                             <div class="col-md-4 col-xs-4 MRNONE">
                                 <div class="input-round width-100">
-
                                     <select id="list_PendingWith">
                                         <option value="Reject">Reject</option>
                                         <option value="On Hold">On Hold</option>
@@ -796,6 +801,7 @@
                                     <select id="list_PendingWith" style="height: 35px">
                                         <option value="Reject">Reject</option>
                                         <option value="On Hold">On Hold</option>
+										<option value="Completed">Completed</option>
                                     </select>
                                 </div>
 
@@ -826,18 +832,34 @@
 <div id="ApprovalPaginationJS" class="paginationjs paginationjs-big"></div>
 <b><a id="LoadAllNewIdeas" style="color: #9b2ba0;">Load Primary Vertical & ServiceLine</a></b>
 <script>
+var checkL3 = "";
+	function GetFilteredData() {
+	
+				var approvalDetails = new Array();
+                approvalDetails = GetAllApprovalDetails(approvalDetails);
+                var i, len;
+                len = approvalDetails.length;
 
-    function GetFilteredData() {
-		
-        NewIdeasItemCount = false;
-        $("#pageloaddiv").show();
-        setTimeout(function () {
-            GetFilteredDataNewIdeas();
-            $("#pageloaddiv").hide();
-        }, 2000);
-		//$("#txtSearch").val("");
-    }
-
+                for (i = 0, len; i < len; i++) {
+                    if (approvalDetails[i].split('\\')[2].indexOf("L3") >= 0) {
+                        checkL3 = "exists";
+                    }
+                }
+	
+	
+		if ((PrimaryVerticalName != "Technology SSC" || PrimaryVerticalName != "TSSI - Networks") && (!checkL3)) {
+			GetNewIdeas();
+			MyNewIdeas();
+		} else {
+			NewIdeasItemCount = false;
+			$("#pageloaddiv").show();
+			setTimeout(function() {
+				GetFilteredDataNewIdeas();
+				$("#pageloaddiv").hide();
+			}, 2000);
+		}
+	}
+	
     $('#LoadAllNewIdeas').click(function () {
         NewIdeasItemCount = true;
         GetPrimaryServiceLineAndPrimaryServiceLine();
@@ -898,7 +920,11 @@
         changeYear: true //this option for allowing user to select from year range
     });
 
+    var year = (new Date).getFullYear();
     $("#dtL2ActualDateCompletion").datepicker({
+
+        maxDate: "+0D",
+        minDate: new Date(year, 3, 1),
         showOn: "both",
         buttonImage: '../Style Library/Images/date.png',
         buttonImageOnly: true,
@@ -1021,6 +1047,29 @@
             $(this).val('');
             $("#valdtExpectedDateCompletion").show();
             //alert("Expected date should not be less than current date.");
+        }
+    });
+
+    $("#dtL2ActualDateCompletion").bind('change', function () {
+        $("#valdtL2ExpectedDateCompletion").hide();
+        $("#valdtL2FinancialDate").hide();
+        var dtL2ExpectedDateCompletion = $(this).val();
+
+        var currentDate = new Date()
+        var month = currentDate.getMonth() + 1
+        var day = currentDate.getDate()
+        var year = currentDate.getFullYear()
+        currentDate = (month + "/" + day + "/" + year);
+        var minDate = new Date(year, 3, 1);
+
+        if (Date.parse(dtL2ExpectedDateCompletion) > Date.parse(currentDate)) {
+            $(this).val('');
+            $("#valdtL2ExpectedDateCompletion").show();
+
+        }
+        if (Date.parse(dtL2ExpectedDateCompletion) < Date.parse(minDate)) {
+            $(this).val('');
+            $("#valdtL2FinancialDate").show();
         }
     });
 
@@ -1297,7 +1346,7 @@
             else if (tabNewOther == "Other Idea") {
 
                 $('#LoadAllNewIdeas').hide();
-                var checkL3 = "";
+                
                 var approvalDetails = new Array();
                 approvalDetails = GetAllApprovalDetails(approvalDetails);
                 var i, len;
@@ -2460,12 +2509,14 @@
         //$("#vallist_CategoryL1ImprovementLever").hide();
         //NikhilD commented above code
         $("#vallist_CategoryL1OpportunityType").hide();
+        $("#valCINonCI").hide();
         $("#valdtL1ExpectedDateCompletion").hide();
         //NikhilD Commented below code
         //$("#vallist_CategoryL2ImprovementLever").hide();
         //NikhilD Commented above code
         $("#vallist_CategoryL2ImplementationLevel").hide();
         $("#vallist_CategoryL2OpportunityType").hide();
+        $("#valCINonCIL2").hide();
         $("#valtxt_L2EffortCostInvolved").hide();
         $("#valdtActualDateOfCompletion").hide();
         $("#valHardTotalBenefits").hide();
@@ -2498,6 +2549,14 @@
                     $("#list_CategoryL1OpportunityType").focus();
                     $("#vallist_CategoryL1OpportunityType").show();
                     //alert("Please Enter Category Opportunity Type.");
+                    return false;
+                }
+
+                var list_CI_NonCI = $("#list_CI_NonCI").val();
+                if (list_CI_NonCI == 'Select') {
+                    $("#list_CI_NonCI").focus();
+                    $("#valCINonCI").show();
+
                     return false;
                 }
 
@@ -2534,9 +2593,20 @@
                 if (list_CategoryL2OpportunityType == '') {
                     $("#list_CategoryL2OpportunityType").focus();
                     $("#vallist_CategoryL2OpportunityType").show();
-                    //alert("Please Enter Category Opportunity Type.");
+
                     return false;
                 }
+
+                var list_CI_NonCI_L2 = $("#list_CI_NonCI_L2").val();
+                if (list_CI_NonCI_L2 == 'Select') {
+                    $("#list_CI_NonCI_L2").focus();
+                    $("#valCINonCIL2").show();
+
+                    return false;
+                }
+
+
+
 
                 var txt_L2EffortCostInvolved = $("#txt_L2EffortCostInvolved").val();
                 if (txt_L2EffortCostInvolved == '') {
@@ -3203,11 +3273,11 @@
                         }
 
                         if (IdeaStatus.indexOf("L1") >= 0) {
-                            getText = "<div class='overflowHidden'> <p><b> " + IdeaNumber + " : " + title + "</b></p><br> <p><b>Idea Description:</b>" + IdeaDesc + "</p><br><p> <b>Estimated Benefits In Hours:</b>" + EstimatedBenefitsInHours + "</p><br><p><b>Estimated Benefits In Cost:</b>" + EstimatedBenefitsCostCurrency + " " + EstimatedBenefitsInCost + "</p><br><p><b>Service Line:</b>" + IdeaServiceLine + "</p><br><p><b>Service:</b>" + IdeaService + "</p><br><p><b>Location:</b>" + IdeaLocation + "</p>";
+                            getText = "<div class='overflowHidden'><div class='right-pop-section pull-right'><span>By: " + IdeaCreator + "</span></div> <p><b> " + IdeaNumber + " : " + title + "</b></p><br> <p><b>Idea Description:</b>" + IdeaDesc + "</p><br><p> <b>Estimated Benefits In Hours:</b>" + EstimatedBenefitsInHours + "</p><br><p><b>Estimated Benefits In Cost:</b>" + EstimatedBenefitsCostCurrency + " " + EstimatedBenefitsInCost + "</p><br><p><b>Service Line:</b>" + IdeaServiceLine + "</p><br><p><b>Service:</b>" + IdeaService + "</p><br><p><b>Location:</b>" + IdeaLocation + "</p>";
                         }
                         else {
 
-                            getText = "<div class='overflowHidden'> <h1 class='col-md-6 col-xs-6 pull-left PNONE'> " + IdeaNumber + " : " + title + "</h1> <div class='right-pop-section pull-right'> <span>Function:" + functionname + "<br> Category:" + Categoryvalue + "<br> By: " + IdeaCreator + "<br> Idea Status: " + ideaStatus + "<br> Service Line: " + ideaServiceLine + "</span></div> </div> <br> <p> <b>Problem statment : </b> " + problemstatement + "</p>  <br> <p> <b>Goal statment : </b> " + Goalstatement + "</p><br><p> <b>Estimated statment : </b> " + Estimatedbenefits + "</p> <br> <p> <div class='attchment-popup'> <div class='col-md-8 col-xs-8 PNONE'> <b>Attached Documents : </b>  <br> <div class='format'> " + divattach + "</div> </div> </div> </p>";
+                            getText = "<div class='overflowHidden'> <h1 class='col-md-6 col-xs-6 pull-left PNONE'> " + IdeaNumber + " : " + title + "</h1> <div class='right-pop-section pull-right'> <span>Function:" + functionname + "<br> Category:" + Categoryvalue + "<br> By: " + IdeaCreator + "<br> Idea Status: " + ideaStatus + "<br> Service Line: " + ideaServiceLine + "</span></div> </div> <br> <p> <b>Problem statement : </b> " + problemstatement + "</p>  <br> <p> <b>Goal statement : </b> " + Goalstatement + "</p><br><p> <b>Estimated benefits : </b> " + Estimatedbenefits + "</p> <br> <p> <div class='attchment-popup'> <div class='col-md-8 col-xs-8 PNONE'> <b>Attached Documents : </b>  <br> <div class='format'> " + divattach + "</div> </div> </div> </p>";
                         }
 
                     });
@@ -3885,6 +3955,8 @@
                             ],
                             completefunc: function (xData, Status) {
                                 //////NikhilD Added below code for the latest changes
+                                if (roleApprover == "Approver")
+                                {
                                 var UserVertical = document.getElementById("UserVertical");
                                 var UserVerticalValue = UserVertical.options[UserVertical.selectedIndex].text;
                                 var UserServiceLine = document.getElementById("UserServiceLine");
@@ -3893,6 +3965,7 @@
                                 localStorage.setItem("ActionClicked", true);
                                 localStorage.setItem("ActionClickedVerticalName", UserVerticalValue);
                                 localStorage.setItem("ActionClickedServiceLine", UserServiceLineValue);
+                                }
                                 //////NikhilD Added below code for the latest changes
                             }
                         });
@@ -3939,15 +4012,17 @@
                             valuepairs: ValuePairs,
                             completefunc: function (xData, Status) {
                                 //////NikhilD Added below code for the latest changes
-                                var UserVertical = document.getElementById("UserVertical");
-                                var UserVerticalValue = UserVertical.options[UserVertical.selectedIndex].text;
-                                var UserServiceLine = document.getElementById("UserServiceLine");
-                                var UserServiceLineValue = UserServiceLine.options[UserServiceLine.selectedIndex].text;
+                                if (roleApprover == "Approver") {
+                                    var UserVertical = document.getElementById("UserVertical");
+                                    var UserVerticalValue = UserVertical.options[UserVertical.selectedIndex].text;
+                                    var UserServiceLine = document.getElementById("UserServiceLine");
+                                    var UserServiceLineValue = UserServiceLine.options[UserServiceLine.selectedIndex].text;
 
-                                localStorage.setItem("ActionClicked", true);
-                                localStorage.setItem("ActionClickedVerticalName", UserVerticalValue);
-                                localStorage.setItem("ActionClickedServiceLine", UserServiceLineValue);
-                                //////NikhilD Added below code for the latest changes
+                                    localStorage.setItem("ActionClicked", true);
+                                    localStorage.setItem("ActionClickedVerticalName", UserVerticalValue);
+                                    localStorage.setItem("ActionClickedServiceLine", UserServiceLineValue);
+                                    //////NikhilD Added below code for the latest changes
+                                }
                             }
                         });
 
@@ -3995,15 +4070,17 @@
                             valuepairs: ValuePairs,//[["IdeaScope", selectedTab],["IdeaStatus", status],["ImprovementLeverCategory", ImprovementLeverCategory],["ImplementationEffortsCategory", ImplementationEffortsCategory], ["OpportunityTypeCategory", OpportunityTypeCategory], ["EffortCostInvolved", txt_L1EffortCostInvolved], ["ActualDateOfCompletion", dtL2ActualDateCompletion], ["StatusComment", txtComments]],
                             completefunc: function (xData, Status) {
                                 //////NikhilD Added below code for the latest changes
-                                var UserVertical = document.getElementById("UserVertical");
-                                var UserVerticalValue = UserVertical.options[UserVertical.selectedIndex].text;
-                                var UserServiceLine = document.getElementById("UserServiceLine");
-                                var UserServiceLineValue = UserServiceLine.options[UserServiceLine.selectedIndex].text;
+                                if (roleApprover == "Approver") {
+                                    var UserVertical = document.getElementById("UserVertical");
+                                    var UserVerticalValue = UserVertical.options[UserVertical.selectedIndex].text;
+                                    var UserServiceLine = document.getElementById("UserServiceLine");
+                                    var UserServiceLineValue = UserServiceLine.options[UserServiceLine.selectedIndex].text;
 
-                                localStorage.setItem("ActionClicked", true);
-                                localStorage.setItem("ActionClickedVerticalName", UserVerticalValue);
-                                localStorage.setItem("ActionClickedServiceLine", UserServiceLineValue);
-                                //////NikhilD Added below code for the latest changes
+                                    localStorage.setItem("ActionClicked", true);
+                                    localStorage.setItem("ActionClickedVerticalName", UserVerticalValue);
+                                    localStorage.setItem("ActionClickedServiceLine", UserServiceLineValue);
+                                    //////NikhilD Added below code for the latest changes
+                                }
                             }
                         });
 
@@ -4613,6 +4690,7 @@
 
             $("#txtComments").focus();
             $("#valtxtComments").show();
+
             //alert("Comment is Mandatory.");
         }
     }
@@ -4640,7 +4718,7 @@
 
     function GetFilteredDataOtherIdeas() {
         $(".paginationjs").pagination('destroy');
-        var checkL3 = "";
+       
         var otherText = $('#txtOtIdea').val();
 
         var approvalDetails = new Array();
@@ -4953,7 +5031,9 @@
 
     /* Get filtered Other Ideas*/
     function GetFilteredDataNewIdeas() {
-	query2="";
+	
+	
+        query2 = "";
         if ($(".paginationjs").html() != '') {
             $(".paginationjs").pagination('destroy');
         }
@@ -4969,7 +5049,6 @@
         var UserServiceLineValue = UserServiceLine.options[UserServiceLine.selectedIndex].text;
 
         if (Vertical == UserVerticalValue) {
-
             var data = "";
             var UniuqueapprovalDetails = new Array();
 
@@ -5011,7 +5090,7 @@
                 }
 
                 var query1 = "";
-                var checkL3 = "";
+                //var checkL3 = "";
                 var i, len;
                 var end = "";
                 len = approvalDetails.length;
@@ -5023,19 +5102,80 @@
                 var j, uniqueLen;
                 uniqueLen = UniuqueapprovalDetails.length;
 
+                if (Vertical == "Technology SSC" || Vertical == "TSSI - Networks") {
+                    for (j = 0, uniqueLen; j < uniqueLen; j++) {
+                        if (UniuqueapprovalDetails[j].split('\\')[2].indexOf("L3") >= 0) {
+                            checkL3 = "exists";
+                        }
+                        if (j == 0 || j == uniqueLen - 1) {
+                            if (UniuqueapprovalDetails[j].split('\\')[3] == "Accelerate") {
+                                if (Location == "All") {
+                                    query1 += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq></And></And>";
+                                }
+                                else {
 
-                for (j = 0, uniqueLen; j < uniqueLen; j++) {
-                    if (UniuqueapprovalDetails[j].split('\\')[2].indexOf("L3") >= 0) {
-                        checkL3 = "exists";
+                                    query1 += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq></And></And></And>";
+                                }
+
+                            }
+
+                            else {
+                                if (UniuqueapprovalDetails[j].split('\\')[2] == "L1") {
+                                    query1 += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And>";
+                                }
+                                else if (Location == "All") {
+                                    query1 += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And>";
+                                }
+                                else {
+                                    query1 += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And></And>";
+                                }
+
+
+                            }
+                        }
+                        else {
+                            if (UniuqueapprovalDetails[j].split('\\')[3] == "Accelerate") {
+                                if (Location == "All") {
+                                    query1 += "<Or><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq></And></And>";
+                                }
+                                else {
+                                    query1 += "<Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq></And></And></And>";
+                                }
+                            }
+                            else {
+                                if (UniuqueapprovalDetails[j].split('\\')[2] == "L1") {
+                                    query1 += "<Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And>";
+                                }
+                                else if (Location == "All") {
+                                    query1 += "<Or><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And>";
+                                }
+
+                                else {
+                                    query1 += "<Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And></And>";
+                                }
+                            }
+                        }
+                        if (j < uniqueLen - 1) {
+                            end += "</Or>";
+                        }
+
                     }
-                    if (j == 0 || j == uniqueLen - 1) {
-                        query1 += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                    }
-                    else {
-                        query1 += "<Or><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                    }
-                    if (j < uniqueLen - 1) {
-                        end += "</Or>";
+
+                }
+                else {
+                    for (j = 0, uniqueLen; j < uniqueLen; j++) {
+                        if (UniuqueapprovalDetails[j].split('\\')[2].indexOf("L3") >= 0) {
+                            checkL3 = "exists";
+                        }
+                        if (j == 0 || j == uniqueLen - 1) {
+                            query1 += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
+                        }
+                        else {
+                            query1 += "<Or><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
+                        }
+                        if (j < uniqueLen - 1) {
+                            end += "</Or>";
+                        }
                     }
                 }
                 query1 += end;
@@ -5048,28 +5188,68 @@
                 for (j = 0, uniqueLen; j < uniqueLen; j++) {
                     if (checkL3 == "exists") {
 
-                        
+
                         if (Vertical == "Technology SSC" || Vertical == "TSSI - Networks") {
 
-                            query = "<Query><Where>" + query2 + "<Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><Or><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
+                            query = "<Query><Where>" + query2 + "<Or><Or><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
                             if (uniqueLen > 1) {
                                 query += "<Or>";
                             }
 
                             query = query + query1 + "</And>";
 
-                            query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F1</Value></Eq>";
-                            query += "<And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                            query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq></And>";
-                            query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                            query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F2</Value></Eq>";
-                            query += "<And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                            query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq></And>";
-                            query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                            query += "<And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F3</Value></Eq>";
-                            query += "<And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                            query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq></And>";
-                            query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></Or></Or></Or></And>";
+                            if (UniuqueapprovalDetails[j].split('\\')[3] == "Accelerate") {
+                                if (Location != "All") {
+                                    query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq>";
+                                }
+
+                                query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F1</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq>";
+                                query += "<Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq></And></And></And>";
+                                query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F2</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq>";
+                                query += "<Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq></And></And></And>";
+                                query += "<And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F3</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq>";
+                                query += "<Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq></And></And></And></Or></Or>";
+
+                                if (Location != "All") {
+                                    query += "</And></Or>";
+                                }
+                                else {
+                                    query += "</Or>";
+                                }
+                            }
+                            else {
+                                if (Location != "All") {
+                                    query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq>";
+                                }
+
+                                query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F1</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq>";
+                                query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And></And>";
+                                query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F2</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq>";
+                                query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And></And>";
+                                query += "<And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F3</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq>";
+                                query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And></And></Or></Or>";
+                                if (Location != "All") {
+                                    query += "</And></Or>";
+                                }
+                                else {
+                                    query += "</Or>";
+                                }
+                            }
 
                         }
                         else {
@@ -5095,7 +5275,7 @@
 
                             query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[5] + "</Value></Eq>";
                             query += "<And><Eq><FieldRef Name='VIdeaType' /><Value Type='Text'>" + crossFunctionText + "</Value></Eq>";
-                            query += "<Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq></And></And></Or>";
+                            query += "<And><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq></And></And></And></Or>";
                         }
 
                         query += "<Or>";
@@ -5133,7 +5313,7 @@
                         }
                     }
                     else {
-                        
+
                         if (Vertical == "Technology SSC" || Vertical == "TSSI - Networks") {
                             query = "<Query><Where>" + query2 + "<Or><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
                             if (uniqueLen > 1) {
@@ -5151,7 +5331,7 @@
 
                             query += "<And><Contains><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting</Value></Contains>";
                             query += "<And><Eq><FieldRef Name='VIdeaType' /><Value Type='Text'>" + crossFunctionText + "</Value></Eq>";
-                            query += "<Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq></And></And></Or>";
+                            query += "<And><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq></And></And></And></Or>";
                         }
 
                         query += "<And><Or><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>All</Value></Eq>";
@@ -5266,19 +5446,81 @@
                 UniuqueapprovalDetails = GetAllApprovalDetailsByVerticalAndServiceLine();
                 var j, uniqueLen;
                 uniqueLen = UniuqueapprovalDetails.length;
-                for (j = 0, uniqueLen; j < uniqueLen; j++) {
-                    if (UniuqueapprovalDetails[j].split('\\')[2].indexOf("L3") >= 0) {
-                        checkL3 = "exists";
-                    }
-                    if (j == 0 || j == uniqueLen - 1) {
-                        query1 += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
+
+                if (Vertical == "Technology SSC" || Vertical == "TSSI - Networks") {
+                    for (j = 0, uniqueLen; j < uniqueLen; j++) {
+                        if (UniuqueapprovalDetails[j].split('\\')[2].indexOf("L3") >= 0) {
+                            checkL3 = "exists";
+                        }
+                        if (j == 0 || j == uniqueLen - 1) {
+                            if (UniuqueapprovalDetails[j].split('\\')[3] == "Accelerate") {
+                                if (Location == "All") {
+                                    query1 += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq></And></And>";
+                                }
+                                else {
+
+                                    query1 += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq></And></And></And>";
+                                }
+                            }
+                            else {
+                                if (UniuqueapprovalDetails[j].split('\\')[2] == "L1") {
+                                    query1 += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And>";
+                                }
+                                else if (Location == "All") {
+                                    query1 += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And>";
+                                }
+                                else {
+                                    query1 += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And></And>";
+                                }
+
+
+                            }
+                        }
+                        else {
+                            if (UniuqueapprovalDetails[j].split('\\')[3] == "Accelerate") {
+                                if (Location == "All") {
+                                    query1 += "<Or><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq></And></And>";
+                                }
+                                else {
+                                    query1 += "<Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq></And></And></And>";
+                                }
+                            }
+                            else {
+                                if (UniuqueapprovalDetails[j].split('\\')[2] == "L1") {
+                                    query1 += "<Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And>";
+                                }
+                                else if (Location == "All") {
+                                    query1 += "<Or><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And>";
+                                }
+
+                                else {
+                                    query1 += "<Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And></And>";
+                                }
+                            }
+                        }
+                        if (j < uniqueLen - 1) {
+                            end += "</Or>";
+                        }
 
                     }
-                    else {
-                        query1 += "<Or><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                    }
-                    if (j < uniqueLen - 1) {
-                        end += "</Or>";
+
+                }
+
+                else {
+                    for (j = 0, uniqueLen; j < uniqueLen; j++) {
+                        if (UniuqueapprovalDetails[j].split('\\')[2].indexOf("L3") >= 0) {
+                            checkL3 = "exists";
+                        }
+                        if (j == 0 || j == uniqueLen - 1) {
+                            query1 += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
+
+                        }
+                        else {
+                            query1 += "<Or><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
+                        }
+                        if (j < uniqueLen - 1) {
+                            end += "</Or>";
+                        }
                     }
                 }
                 query1 += end;
@@ -5293,31 +5535,69 @@
 
                         if (Vertical == "Technology SSC" || Vertical == "TSSI - Networks") {
 
-                            query = "<Query><Where>" + query2 + "<Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><Or><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-
-
+                            query = "<Query><Where>" + query2 + "<Or><Or><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
                             if (uniqueLen > 1) {
                                 query += "<Or>";
                             }
 
                             query = query + query1 + "</And>";
-                            query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F1</Value></Eq>";
-                            query += " <And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                            query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq></And>";
-                            query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                            query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F2</Value></Eq>";
-                            query += " <And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                            query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq></And>";
-                            query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                            query += "<And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F3</Value></Eq>";
-                            query += " <And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                            query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq></And>";
-                            query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></Or></Or></Or></And>";
+
+                            if (UniuqueapprovalDetails[j].split('\\')[3] == "Accelerate") {
+                                if (Location != "All") {
+                                    query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq>";
+                                }
+
+                                query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F1</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq>";
+                                query += "<Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq></And></And></And>";
+                                query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F2</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq>";
+                                query += "<Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq></And></And></And>";
+                                query += "<And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F3</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq>";
+                                query += "<Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq></And></And></And></Or></Or>";
+
+                                if (Location != "All") {
+                                    query += "</And></Or>";
+                                }
+                                else {
+                                    query += "</Or>";
+                                }
+                            }
+                            else {
+                                if (Location != "All") {
+                                    query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq>";
+                                }
+
+                                query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F1</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq>";
+                                query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And></And>";
+                                query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F2</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq>";
+                                query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And></And>";
+                                query += "<And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F3</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq>";
+                                query += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq>";
+                                query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></And></And></Or></Or>";
+                                if (Location != "All") {
+                                    query += "</And></Or>";
+                                }
+                                else {
+                                    query += "</Or>";
+                                }
+                            }
 
                         }
                         else {
                             query = "<Query><Where>" + query2 + "<Or><Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><Or><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-
 
                             if (uniqueLen > 1) {
                                 query += "<Or>";
@@ -5339,7 +5619,7 @@
 
                             query += "<And><Contains><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting</Value></Contains><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[5] + "</Value></Eq>";
                             query += "<And><Eq><FieldRef Name='VIdeaType' /><Value Type='Text'>" + crossFunctionText + "</Value></Eq>";
-                            query += "<Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq></And></And></And></Or>";
+                            query += "<And><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq></And></And></And></And></Or>";
                         }
 
                         query += "<Or>";
@@ -5378,7 +5658,7 @@
                     }
 
                     else {
-                       
+
                         if (Vertical == "Technology SSC" || Vertical == "TSSI - Networks") {
                             query = "<Query><Where>" + query2 + "<Or><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
                             if (uniqueLen > 1) {
@@ -5396,7 +5676,7 @@
 
                             query += "<And><Contains><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting</Value></Contains>";
                             query += "<And><Eq><FieldRef Name='VIdeaType' /><Value Type='Text'>" + crossFunctionText + "</Value></Eq>";
-                            query += "<Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq></And></And></Or>";
+                            query += "<And><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq></And></And></And></Or>";
                         }
 
                         query += "<And><Or><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>All</Value></Eq>";
@@ -5597,7 +5877,7 @@
                     query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[0].split('\\')[1] + "</Value></Eq>";
                     query += "<And><Contains><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + IdeaStatus + "</Value></Contains>";
                     query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                    
+
                     query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>0</Value></Eq>";
                     query += "<And><Eq><FieldRef Name='Author' /><Value Type='Text'>" + leaderEmail + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at L3</Value></Eq></And></And></Or>";
@@ -5607,7 +5887,7 @@
                     query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[0].split('\\')[1] + "</Value></Eq>";
                     query += "<And><Contains><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + IdeaStatus + "</Value></Contains>";
                     query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                    
+
                     query += qryEnd + "</Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
                 }
             }
@@ -5624,7 +5904,7 @@
                     query += "<And><Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[0].split('\\')[2] + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[1].split('\\')[2] + "</Value></Eq></Or>";
                     query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                    
+
                     query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>0</Value></Eq>";
                     query += "<And><Eq><FieldRef Name='Author' /><Value Type='Text'>" + leaderEmail + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at L3</Value></Eq></And></And></Or>";
@@ -5635,7 +5915,7 @@
                     query += "<And><Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[0].split('\\')[2] + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[1].split('\\')[2] + "</Value></Eq></Or>";
                     query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                    
+
                     query += qryEnd + "</Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
                 }
             }
@@ -5654,7 +5934,7 @@
                     query += "<Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[1].split('\\')[2] + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[2].split('\\')[2] + "</Value></Eq></Or></Or>";
                     query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                    
+
                     query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>0</Value></Eq>";
                     query += "<And><Eq><FieldRef Name='Author' /><Value Type='Text'>" + leaderEmail + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at L3</Value></Eq></And></And></Or>";
@@ -5668,7 +5948,7 @@
                     query += "<Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[1].split('\\')[2] + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[2].split('\\')[2] + "</Value></Eq></Or></Or>";
                     query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                    
+
                     query += qryEnd + "</Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
                 }
             }
@@ -5687,7 +5967,7 @@
                 query += "<Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[2].split('\\')[2] + "</Value></Eq>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[3].split('\\')[2] + "</Value></Eq></Or></Or></Or>";
                 query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                
+
                 query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>0</Value></Eq>";
                 query += "<And><Eq><FieldRef Name='Author' /><Value Type='Text'>" + leaderEmail + "</Value></Eq>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at L3</Value></Eq></And></And></Or>";
@@ -5709,7 +5989,7 @@
                 query += "<Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[3].split('\\')[2] + "</Value></Eq>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[4].split('\\')[2] + "</Value></Eq></Or></Or></Or></Or>";
                 query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                
+
                 query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>0</Value></Eq>";
                 query += "<And><Eq><FieldRef Name='Author' /><Value Type='Text'>" + leaderEmail + "</Value></Eq>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at L3</Value></Eq></And></And></Or>";
@@ -5732,7 +6012,7 @@
                 query += "<Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[4].split('\\')[2] + "</Value></Eq>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at " + approvalDetails[5].split('\\')[2] + "</Value></Eq></Or></Or></Or></Or></Or>";
                 query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                
+
                 query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>0</Value></Eq>";
                 query += "<And><Eq><FieldRef Name='Author' /><Value Type='Text'>" + leaderEmail + "</Value></Eq>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rejected at L3</Value></Eq></And></And></Or>";
@@ -5751,7 +6031,7 @@
                     query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[0].split('\\')[1] + "</Value></Eq>";
                     query += "<And><Contains><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + IdeaStatus + "</Value></Contains>";
                     query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                    
+
                     query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>0</Value></Eq>";
                     query += "<And><Eq><FieldRef Name='Author' /><Value Type='Text'>" + leaderEmail + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from L3</Value></Eq></And></And></Or>";
@@ -5761,7 +6041,7 @@
                     query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[0].split('\\')[1] + "</Value></Eq>";
                     query += "<And><Contains><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + IdeaStatus + "</Value></Contains>";
                     query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                    
+
                     query += qryEnd + "</Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
                 }
             }
@@ -5778,7 +6058,7 @@
                     query += "<And><Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[0].split('\\')[2] + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[1].split('\\')[2] + "</Value></Eq></Or>";
                     query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                    
+
                     query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>0</Value></Eq>";
                     query += "<And><Eq><FieldRef Name='Author' /><Value Type='Text'>" + leaderEmail + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from L3</Value></Eq></And></And></Or>";
@@ -5789,7 +6069,7 @@
                     query += "<And><Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[0].split('\\')[2] + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[1].split('\\')[2] + "</Value></Eq></Or>";
                     query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                    
+
                     query += qryEnd + "</Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
                 }
             }
@@ -5808,7 +6088,7 @@
                     query += "<Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[1].split('\\')[2] + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[2].split('\\')[2] + "</Value></Eq></Or></Or>";
                     query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                    
+
                     query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>0</Value></Eq>";
                     query += "<And><Eq><FieldRef Name='Author' /><Value Type='Text'>" + leaderEmail + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from L3</Value></Eq></And></And></Or>";
@@ -5822,7 +6102,7 @@
                     query += "<Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[1].split('\\')[2] + "</Value></Eq>";
                     query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[2].split('\\')[2] + "</Value></Eq></Or></Or>";
                     query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                    
+
                     query += qryEnd + "</Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
                 }
             }
@@ -5841,8 +6121,8 @@
                 query += "<Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[2].split('\\')[2] + "</Value></Eq>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[3].split('\\')[2] + "</Value></Eq></Or></Or></Or>";
                 query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                
-                
+
+
                 query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>0</Value></Eq>";
                 query += "<And><Eq><FieldRef Name='Author' /><Value Type='Text'>" + leaderEmail + "</Value></Eq>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from L3</Value></Eq></And></And></Or>";
@@ -5863,8 +6143,8 @@
                 query += "<Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[3].split('\\')[2] + "</Value></Eq>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[4].split('\\')[2] + "</Value></Eq></Or></Or></Or></Or>";
                 query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                
-                
+
+
                 query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>0</Value></Eq>";
                 query += "<And><Eq><FieldRef Name='Author' /><Value Type='Text'>" + leaderEmail + "</Value></Eq>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from L3</Value></Eq></And></And></Or>";
@@ -5886,8 +6166,8 @@
                 query += "<Or><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[4].split('\\')[2] + "</Value></Eq>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from " + approvalDetails[5].split('\\')[2] + "</Value></Eq></Or></Or></Or></Or></Or>";
                 query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-                
-                
+
+
                 query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>0</Value></Eq>";
                 query += "<And><Eq><FieldRef Name='Author' /><Value Type='Text'>" + leaderEmail + "</Value></Eq>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>OnHold from L3</Value></Eq></And></And></Or>";
@@ -5903,7 +6183,7 @@
             query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[0].split('\\')[1] + "</Value></Eq>";
             query += "<And><Contains><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Completed</Value></Contains>";
             query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + ServiceLineValue + "</Value></Eq></And></And></And>";
-            
+
             query += qryEnd + "</Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
         }
         return query;
@@ -6202,11 +6482,11 @@
                             EstimatedBenefitsCostCurrency = "";
                         }
 
-                        getText = "<div class='popupBigBox'><div class='overflowHidden'> <button type='button' class='close' data-dismiss='modal'> <img src='/Group/thinkbox/Style library/Images/close_btn.png' /></button></div> <div class='dividerLine'> </div> <div class='popupSmBoxContent text-left' style='height: 300px; overflow-y: auto; overflow-x: hidden;'> <p><b>" + IdeaNumber + " : " + title + "</b></p><br> <p><b>Idea Description:</b>" + IdeaDesc + "</p><br><p> <b>Estimated Benefits In Hours:</b>" + EstimatedBenefitsInHours + "</p><br><p><b>Estimated Benefits In Cost:</b>" + EstimatedBenefitsCostCurrency + " " + EstimatedBenefitsInCost + "</p>";
+                        getText = "<div class='popupBigBox'><div class='overflowHidden'> <button type='button' class='close' data-dismiss='modal'> <img src='/Group/thinkbox/Style library/Images/close_btn.png' /></button></div> <div class='dividerLine'> </div> <div class='popupSmBoxContent text-left' style='height: 300px; overflow-y: auto; overflow-x: hidden;'><p><b>" + IdeaNumber + " : " + title + "</b></p><br> <p><b>Idea Description:</b>" + IdeaDesc + "</p><br><p> <b>Estimated Benefits In Hours:</b>" + EstimatedBenefitsInHours + "</p><br><p><b>Estimated Benefits In Cost:</b>" + EstimatedBenefitsCostCurrency + " " + EstimatedBenefitsInCost + "</p>";
 
                     }
                     else {
-                        getText = "<div class='popupBigBox'> <div class='overflowHidden'> <button type='button' class='close' data-dismiss='modal'> <img src='/Group/thinkbox/Style library/Images/close_btn.png' /></button></div> <div class='dividerLine'> </div> <div class='popupSmBoxContent text-left' style='height: 300px; overflow-y: auto; overflow-x: hidden;'> <p><b>" + IdeaNumber + " : " + title + "</b></p><br> <p><b>Idea Description:</b>" + IdeaDesc + "</p><br><p> <b>Estimated Benefits In Hours:</b>" + EstimatedBenefitsInHours + "</p><br><p><b>Estimated Benefits In Cost:</b>" + EstimatedBenefitsCostCurrency + " " + EstimatedBenefitsInCost + "</p><br><p><b>Service Line:</b>" + IdeaServiceLine + "</p><br><p><b>Service:</b>" + IdeaService + "</p><br><p><b>Location:</b>" + IdeaLocation + "</p>";
+                        getText = "<div class='popupBigBox'> <div class='overflowHidden'> <button type='button' class='close' data-dismiss='modal'> <img src='/Group/thinkbox/Style library/Images/close_btn.png' /></button></div> <div class='dividerLine'> </div> <div class='popupSmBoxContent text-left' style='height: 300px; overflow-y: auto; overflow-x: hidden;'><p><b>" + IdeaNumber + " : " + title + "</b></p><br> <p><b>Idea Description:</b>" + IdeaDesc + "</p><br><p> <b>Estimated Benefits In Hours:</b>" + EstimatedBenefitsInHours + "</p><br><p><b>Estimated Benefits In Cost:</b>" + EstimatedBenefitsCostCurrency + " " + EstimatedBenefitsInCost + "</p><br><p><b>Service Line:</b>" + IdeaServiceLine + "</p><br><p><b>Service:</b>" + IdeaService + "</p><br><p><b>Location:</b>" + IdeaLocation + "</p>";
                     }
 
                 });
@@ -6266,8 +6546,6 @@
         if (currentPageNo == 1) {
             jQuery('#pgBtnPrevious').hide();
         }
-
-
 
         var userEmail = $().SPServices.SPGetCurrentUser({ fieldName: "Email", debug: false });
 
@@ -6448,7 +6726,8 @@
                         query += "<And><Contains><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting</Value></Contains>";
                         query += "<And><Eq><FieldRef Name='VIdeaType' /><Value Type='Text'>" + crossFunctionText + "</Value></Eq>";
                         query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + PrimaryVerticalName + "</Value></Eq>";
-                        query += "<Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq></And></And></And>"
+                        query += "<And><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq>";
+                        query += "<Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq></And></And></And></And>"
                         query += "</Or>";
                         query += "<Or>";
                         query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>All</Value></Eq>";
@@ -6584,12 +6863,24 @@
                 }
             }
             else if ((PrimaryVerticalName != "Technology SSC" || PrimaryVerticalName != "TSSI - Networks") && (!checkL3)) {
-                query = "<Query><Where><And><Or><And>";
-                query += "<Eq><FieldRef Name='ManagerID' /><Value Type='Text'>" + manager + "</Value></Eq>";
+                
+				if($('#txtSearch').val()!=""){
+					query = "<Query><Where><And>";
+				}else{
+					query = "<Query><Where>";
+				}
+				
+                /*query += "<Eq><FieldRef Name='ManagerID' /><Value Type='Text'>" + manager + "</Value></Eq>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting for L1</Value></Eq></And>";
                 query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting for L2</Value></Eq></Or>";
-                query += "<Eq><FieldRef Name='ManagerID' /><Value Type='Text'>" + manager + "</Value></Eq></And></Where><OrderBy><FieldRef Name='Modified' Ascending='False' /></OrderBy></Query>";
-
+                query += "<Eq><FieldRef Name='ManagerID' /><Value Type='Text'>" + manager + "</Value></Eq></And>";
+				*/
+				query += "<Or><And><Eq><FieldRef Name='ManagerID' /><Value Type='Text'>"+ manager +"</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting for L2</Value></Eq></And><And><Eq><FieldRef Name='ManagerID' /><Value Type='Text'>"+ manager +"</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting for L1</Value></Eq></And></Or>";
+				
+				if($('#txtSearch').val()!=""){
+					query += "<Or><Contains><FieldRef Name='Title' /><Value Type='Text'>" + $('#txtSearch').val() + "</Value></Contains><Eq><FieldRef Name='ID' /><Value Type='Number'>" + $('#txtSearch').val() + "</Value></Eq></Or></And>";
+				}
+				query += "</Where><OrderBy><FieldRef Name='Modified' Ascending='False' /></OrderBy></Query>";
             }
             if (query) {
 
@@ -6635,7 +6926,6 @@
                             });
                         }
                     }
-
 
                 });
             }
@@ -6899,18 +7189,50 @@
             }
             if (i == 0 || i == len - 1) {
                 if (approvalDetails[i].split('\\')[3] == "Accelerate") {
-                    query1 += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq></And></And>";
+                    if (Location == "All") {
+                        query1 += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq></And></And>";
+                    }
+                    else {
+
+                        query1 += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq></And></And></And>";
+                    }
+
                 }
+
                 else {
-                    query1 += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And></And>";
+                    if (approvalDetails[i].split('\\')[2] == "L1") {
+                        query1 += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And></And>";
+                    }
+                    else if (Location == "All") {
+                        query1 += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And></And>";
+                    }
+                    else {
+                        query1 += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And></And></And>";
+                    }
+
+
                 }
             }
             else {
                 if (approvalDetails[i].split('\\')[3] == "Accelerate") {
-                    query1 += "<Or><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq></And></And>";
+                    if (Location == "All") {
+                        query1 += "<Or><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq></And></And>";
+                    }
+                    else {
+                        query1 += "<Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq></And></And></And>";
+                    }
                 }
                 else {
-                    query1 += "<Or><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And></And>";
+                    if (approvalDetails[i].split('\\')[2] == "L1") {
+                        query1 += "<Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And></And>";
+                    }
+                    else if (Location == "All") {
+                        query1 += "<Or><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And></And>";
+                    }
+
+                    else {
+                        query1 += "<Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + approvalDetails[i].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And></And></And>";
+                    }
                 }
             }
             if (i < len - 1) {
@@ -6923,25 +7245,64 @@
         for (i = 0, len; i < len; i++) {
             if (checkL3 == "exists") {
 
-                query = "<Query><Where><Or>  <And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq>  <Or><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + PrimaryVerticalName + "</Value></Eq>";
+                query = "<Query><Where><Or><Or><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + PrimaryVerticalName + "</Value></Eq>";
                 if (len > 1) {
                     query += "<Or>";
                 }
                 query = query + query1 + "</And>";
-                query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F1</Value></Eq>";
-                query += " <And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + PrimaryVerticalName + "</Value></Eq>";
-                query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq></And>";
-                query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And>";
-                query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F2</Value></Eq>";
-                query += " <And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + PrimaryVerticalName + "</Value></Eq>";
-                query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq></And>";
-                query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And>";
-                query += "<And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F3</Value></Eq>";
-                query += " <And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + PrimaryVerticalName + "</Value></Eq>";
-                query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq></And>";
-                query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And></Or></Or></Or></And>";
-                
-                
+                if (approvalDetails[i].split('\\')[3] == "Accelerate") {
+                    if (Location != "All") {
+                        query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq>";
+                    }
+
+                    query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F1</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + PrimaryVerticalName + "</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq>";
+                    query += "<Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq></And></And></And>";
+                    query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F2</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + PrimaryVerticalName + "</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq>";
+                    query += "<Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq></And></And></And>";
+                    query += "<And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F3</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + PrimaryVerticalName + "</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq>";
+                    query += "<Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>Non-CI</Value></Eq></And></And></And></Or></Or>";
+
+                    if (Location != "All") {
+                        query += "</And></Or>";
+                    }
+                    else {
+                        query += "</Or>";
+                    }
+                }
+                else {
+                    if (Location != "All") {
+                        query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq>";
+                    }
+
+                    query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F1</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + PrimaryVerticalName + "</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq>";
+                    query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And></And></And>";
+                    query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F2</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + PrimaryVerticalName + "</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq>";
+                    query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And></And></And>";
+                    query += "<And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F3</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + PrimaryVerticalName + "</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + approvalDetails[i].split('\\')[1] + "</Value></Eq>";
+                    query += "<And><Eq><FieldRef Name='CI_x002d_NonCI' /><Value Type='Text'>CI</Value></Eq>";
+                    query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + PrimaryServiceLineName + "</Value></Eq></And></And></And></And></Or></Or>";
+                    if (Location != "All") {
+                        query += "</And></Or>";
+                    }
+                    else {
+                        query += "</Or>";
+                    }
+                }
+
                 query += "<Or>";
                 query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>All</Value></Eq>";
                 query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>All</Value></Eq>";
@@ -7200,449 +7561,13 @@
 
     /* Show New Idea when Clicked in Take Action */
     function ShowNewIdea(TakeActionDetails) {
-
-
         GetIdeasByIDApproval(TakeActionDetails);
-
     }
 
     /* Show New Idea when Clicked on Idea Title*/
     function ShowOnlyIdeaDetails(TakeActionDetails) {
-
         GetOnlyIdeasDetailsByID(TakeActionDetails);
-
     }
-
-    /* Get filtered Other Ideas*/
-    /* Its duplicate function. You can delete this any time
-    function GetFilteredDataNewIdeas() {
-        if ($(".paginationjs").html() != '') {
-            $(".paginationjs").pagination('destroy');
-        }
-        $("#NewIdeasTable").empty();
-        var newNextDayFilteredDateTime = ISODateStringChal(new Date(new Date().setDate(new Date().getDate() + 1)));
-        arrGetFilteredDataNewIdeas = [];
-        NewArrGetFilteredDataNewIdeas = [];
-
-        IsfilteredData = true;
-        var UserVertical = document.getElementById("UserVertical");
-        var UserVerticalValue = UserVertical.options[UserVertical.selectedIndex].text;
-        var UserServiceLine = document.getElementById("UserServiceLine");
-        var UserServiceLineValue = UserServiceLine.options[UserServiceLine.selectedIndex].text;
-
-        if (Vertical == UserVerticalValue) {
-
-            var data = "";
-            var UniuqueapprovalDetails = new Array();
-
-            UniuqueapprovalDetails = GetAllApprovalDetailsByVerticalAndServiceLine();
-
-            if (UniuqueapprovalDetails.length != 0) {
-
-                var ListName = "V-Ideas";
-                var method = "GetListItems";
-                var fieldsToRead = "<ViewFields>" +
-                                "<FieldRef Name='LinkTitle' />" +
-                                "<FieldRef Name='IdeaDescription' />" +
-                                "<FieldRef Name='ID' />" +
-                                "<FieldRef Name='TotalInvestors' />" +
-                                "<FieldRef Name='TotalFundings' />" +
-                                "<FieldRef Name='Author' />" +
-                                "<FieldRef Name='IdeaLever' />" +
-                                "<FieldRef Name='VIdeaType' />" +
-                                "<FieldRef Name='IdeaStatus' />" +
-                                "<FieldRef Name='VerticalName' />" +
-                                "<FieldRef Name='Modified' />" +
-                                "<FieldRef Name='ProblemStatement' />" +
-                                "<FieldRef Name='IdeaNumber' />" +
-                                "<FieldRef Name='RaisedBy' />" +
-                                "</ViewFields>";
-
-                var query = '';
-
-                var approvalDetails = new Array();
-                approvalDetails = GetAllApprovalDetails(approvalDetails);
-
-                var crossFunctionText = '';
-                if (approvalDetails[0].split('\\')[4].indexOf(1) >= 0) {
-                    crossFunctionText = "Cross function";
-                }
-                else {
-                    crossFunctionText = "o";
-                }
-
-                var query1 = "";
-                var checkL3 = "";
-                var i, len;
-                var end = "";
-                len = approvalDetails.length;
-                var UserVerticalValue = UserVertical.options[UserVertical.selectedIndex].text;
-                var UserServiceLineValue = UserServiceLine.options[UserServiceLine.selectedIndex].text;
-
-                var UniuqueapprovalDetails = new Array();
-                UniuqueapprovalDetails = GetAllApprovalDetailsByVerticalAndServiceLine();
-                var j, uniqueLen;
-                uniqueLen = UniuqueapprovalDetails.length;
-
-
-                for (j = 0, uniqueLen; j < uniqueLen; j++) {
-                    if (UniuqueapprovalDetails[j].split('\\')[2].indexOf("L3") >= 0) {
-                        checkL3 = "exists";
-                    }
-                    if (j == 0 || j == uniqueLen - 1) {
-                        query1 += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                    }
-                    else {
-                        query1 += "<Or><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                    }
-                    if (j < uniqueLen - 1) {
-                        end += "</Or>";
-                    }
-                }
-                query1 += end;
-
-
-                if ($("#txtSearch").val() != "") {
-                    query2 = "<And><Or><Contains><FieldRef Name='Title' /><Value Type='Text'>" + $('#txtSearch').val() + "</Value></Contains><Eq><FieldRef Name='ID' /><Value Type='Number'>" + $('#txtSearch').val() + "</Value></Eq></Or>";
-                }
-
-                for (j = 0, uniqueLen; j < uniqueLen; j++) {
-                    if (checkL3 == "exists") {
-
-                        query = "<Query><Where>" + query2 + "<Or><Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><Or><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                        if (uniqueLen > 1) {
-                            query += "<Or>";
-                        }
-
-                        query = query + query1 + "</And>";
-
-                        query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F1</Value></Eq>";
-                        query += "<And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                        query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq></And>";
-                        query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                        query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F2</Value></Eq>";
-                        query += "<And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                        query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq></And>";
-                        query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                        query += "<And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F3</Value></Eq>";
-                        query += "<And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                        query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq></And>";
-                        query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></Or></Or></Or></And>";
-                        query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[5] + "</Value></Eq>";
-                        query += "<And><Eq><FieldRef Name='VIdeaType' /><Value Type='Text'>" + crossFunctionText + "</Value></Eq>";
-                        query += "<Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq></And></And></Or>";
-
-                        query += "<Or>";
-                        query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>All</Value></Eq>";
-                        query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>All</Value></Eq>";
-                        query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting for L3</Value></Eq>";
-                        query += "</And>";
-                        query += "</And>";
-                        query += "<Or>";
-                        query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                        query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>All</Value></Eq>";
-                        query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting for L3</Value></Eq>";
-                        query += "</And>";
-                        query += "</And>";
-                        query += "<Or>";
-                        query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>All</Value></Eq>";
-                        query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq>";
-                        query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting for L3</Value></Eq>";
-                        query += "</And>";
-                        query += "</And>";
-                        query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                        query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq>";
-                        query += "<And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting for L3</Value></Eq><Eq><FieldRef Name='RaisedBy' /><Value Type='Choice'>Leader</Value></Eq>";
-                        query += "</And></And>";
-                        query += "</And>";
-                        query += "</Or></Or></Or>";
-
-                        query += "</Or>";
-
-                        if ($("#txtSearch").val() != "") {
-                            query += "</And></Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
-                        }
-                        else {
-                            query += "</Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
-                        }
-                    }
-                    else {
-                        query = "<Query><Where>"+query2+"<Or><Or><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                        if (uniqueLen > 1) {
-                            query += "<Or>";
-                        }
-                        query = query + query1 + "</And>";
-                        query += "<And><Contains><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting</Value></Contains>";
-                        query += "<And><Eq><FieldRef Name='VIdeaType' /><Value Type='Text'>" + crossFunctionText + "</Value></Eq>";
-                        query += "<Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq></And></And></Or>";
-
-                        query += "<And><Or><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>All</Value></Eq>";
-                        query += "<Eq><FieldRef Name='Location' /><Value Type='Text'>All</Value></Eq></Or>";
-                        query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq></And></Or>";
-
-                        if ($("#txtSearch").val() != "") {
-                            query += "</And></Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
-                        }
-                        else {
-                            query += "</Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
-                        }
-                    }
-                }
-
-                $().SPServices({
-                    operation: method,
-                    async: false,
-                    listName: ListName,
-                    CAMLQueryOptions: "<QueryOptions><ExpandUserField>True</ExpandUserField></QueryOptions>",
-                    CAMLViewFields: fieldsToRead,
-                    CAMLQuery: query,
-                    completefunc: function (xData, Status) {
-                        arrGetFilteredDataNewIdeas = [];
-                        if ($(xData.responseXML).SPFilterNode("z:row").length > 0) {
-                            IsClicked = true;
-                            $(xData.responseXML).SPFilterNode("z:row").each(function () {
-
-                                var IdeaNumber = $(this).attr("ows_IdeaNumber");
-
-                                var IdeaAuth = $(this).attr("ows_Author");
-                                var GetFilteredDataNewIdeas = {
-
-                                    "RaisedBy": $(this).attr("ows_RaisedBy"),
-                                    "IdeaTitle": $(this).attr("ows_LinkTitle"),
-                                    "IdeaDesc": $(this).attr("ows_IdeaDescription"),
-                                    "IdeaId": $(this).attr("ows_ID"),
-                                    "Modified": $(this).attr("ows_Modified"),
-                                    "IdeaNumber": $(this).attr("ows_IdeaNumber"),
-                                    "IdeaAuth": $(this).attr("ows_Author"),
-                                    "IdeaCreator": (IdeaAuth.split('#')[5]).replace(/,,/g, ","),
-                                    "IdeaCategory": $(this).attr("ows_IdeaLever"),
-                                    "IdeaFunction": $(this).attr("ows_VIdeaType"),
-                                    "IdeaStatus": $(this).attr("ows_IdeaStatus"),
-                                    "VIdeaType": $(this).attr("ows_VIdeaType"),
-                                    "RaisedBy": $(this).attr("ows_RaisedBy"),
-                                };
-                                arrGetFilteredDataNewIdeas.push(GetFilteredDataNewIdeas);
-                            });
-                        }
-                    }
-                });
-            }
-            else {
-                $("#NewIdeasTable").html("<div class='EmptyMsg'>No Ideas Available ...</div>");
-            }
-        }
-        else {
-            var data = "";
-            var manager = $().SPServices.SPGetCurrentUser({
-                fieldName: "AccountName",
-                debug: false
-            });
-
-            var method = "GetListItems";
-            var ListName = "V-Ideas";
-
-            var UniuqueapprovalDetails = new Array();
-
-            UniuqueapprovalDetails = GetAllApprovalDetailsByVerticalAndServiceLine();
-
-            if (UniuqueapprovalDetails.length != 0) {
-
-                var fieldsToRead = "<ViewFields>" +
-                                "<FieldRef Name='LinkTitle' />" +
-                                "<FieldRef Name='IdeaDescription' />" +
-                                "<FieldRef Name='ID' />" +
-                                "<FieldRef Name='TotalInvestors' />" +
-                                "<FieldRef Name='TotalFundings' />" +
-                                "<FieldRef Name='Author' />" +
-                                "<FieldRef Name='IdeaLever' />" +
-                                "<FieldRef Name='VIdeaType' />" +
-                                "<FieldRef Name='IdeaStatus' />" +
-                                "<FieldRef Name='VerticalName' />" +
-                                 "<FieldRef Name='Modified' />" +
-
-                                "<FieldRef Name='IdeaNumber' />" +
-                                "<FieldRef Name='RaisedBy' />" +
-                                "</ViewFields>";
-                $("#NewIdeasTable").empty();
-
-                var query = '';
-                var approvalDetails = new Array();
-                approvalDetails = GetAllApprovalDetails(approvalDetails);
-
-                var crossFunctionText = '';
-                if (approvalDetails[0].split('\\')[4].indexOf(1) >= 0) {
-                    crossFunctionText = "Cross function";
-                }
-                else {
-                    crossFunctionText = "o";
-                }
-                var query1 = "";
-                var checkL3 = "";
-                var i, len;
-                var end = "";
-                len = approvalDetails.length;
-                var UserVerticalValue = UserVertical.options[UserVertical.selectedIndex].text;
-                var UserServiceLineValue = UserServiceLine.options[UserServiceLine.selectedIndex].text;
-
-                var UniuqueapprovalDetails = new Array();
-                UniuqueapprovalDetails = GetAllApprovalDetailsByVerticalAndServiceLine();
-                var j, uniqueLen;
-                uniqueLen = UniuqueapprovalDetails.length;
-                for (j = 0, uniqueLen; j < uniqueLen; j++) {
-                    if (UniuqueapprovalDetails[j].split('\\')[2].indexOf("L3") >= 0) {
-                        checkL3 = "exists";
-                    }
-                    if (j == 0 || j == uniqueLen - 1) {
-                        query1 += "<And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-
-                    }
-                    else {
-                        query1 += "<Or><And><Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq><Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                    }
-                    if (j < uniqueLen - 1) {
-                        end += "</Or>";
-                    }
-                }
-                query1 += end;
-
-                if ($("#txtSearch").val() != "") {
-                    query2 = "<And><Or><Contains><FieldRef Name='Title' /><Value Type='Text'>" + $('#txtSearch').val() + "</Value></Contains><Eq><FieldRef Name='ID' /><Value Type='Number'>" + $('#txtSearch').val() + "</Value></Eq></Or>";
-                }
-
-
-                for (j = 0, uniqueLen; j < uniqueLen; j++) {
-                    if (checkL3 == "exists") {
-
-                        query = "<Query><Where>" + query2 + "<Or><Or><And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq><Or><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-
-
-                        if (uniqueLen > 1) {
-                            query += "<Or>";
-                        }
-
-                        query = query + query1 + "</And>";
-                        query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F1</Value></Eq>";
-                        query += " <And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                        query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq></And>";
-                        query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                        query += "<Or><And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F2</Value></Eq>";
-                        query += " <And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                        query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq></And>";
-                        query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And>";
-                        query += "<And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Rework from F3</Value></Eq>";
-                        query += " <And><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                        query += "<Eq><FieldRef Name='IdeaLocation' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[1] + "</Value></Eq></And>";
-                        query += "<Eq><FieldRef Name='IdeaServiceLine' /><Value Type='Text'>" + UserServiceLineValue + "</Value></Eq></And></And></Or></Or></Or></And>";
-                        query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + UniuqueapprovalDetails[j].split('\\')[5] + "</Value></Eq>";
-                        query += "<And><And><Eq><FieldRef Name='VIdeaType' /><Value Type='Text'>" + crossFunctionText + "</Value></Eq>";
-                        query += "<Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq></And><Contains><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting</Value></Contains></And></And></Or>";
-
-                        query += "<Or>";
-                        query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>All</Value></Eq>";
-                        query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>All</Value></Eq>";
-                        query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting for L3</Value></Eq>";
-                        query += "</And>";
-                        query += "</And>";
-                        query += "<Or>";
-                        query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                        query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>All</Value></Eq>";
-                        query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting for L3</Value></Eq>";
-                        query += "</And>";
-                        query += "</And>";
-                        query += "<Or>";
-                        query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>All</Value></Eq>";
-                        query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq>";
-                        query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting for L3</Value></Eq>";
-                        query += "</And>";
-                        query += "</And>";
-                        query += "<And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                        query += "<And><Eq><FieldRef Name='Location' /><Value Type='Text'>" + Location + "</Value></Eq>";
-                        query += "<And><Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting for L3</Value></Eq><Eq><FieldRef Name='RaisedBy' /><Value Type='Choice'>Leader</Value></Eq>";
-                        query += "</And></And>";
-                        query += "</And>";
-                        query += "</Or></Or></Or>";
-
-                        query += "</Or>";
-
-                        if ($("#txtSearch").val() != "") {
-                            query += "</And></Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
-                        }
-                        else {
-                            query += "</Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
-                        }
-                    }
-
-                    else {
-                        query = "<Query><Where>" + query2 + "<Or><Or><And><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq>";
-                        if (uniqueLen > 1) {
-                            query += "<Or>";
-                        }
-                        query = query + query1 + "</And>";
-                        query += "<And><Contains><FieldRef Name='IdeaStatus' /><Value Type='Choice'>Waiting</Value></Contains>";
-                        query += "<And><Eq><FieldRef Name='VIdeaType' /><Value Type='Text'>" + crossFunctionText + "</Value></Eq>";
-                        query += "<Eq><FieldRef Name='VerticalName' /><Value Type='Text'>" + UserVerticalValue + "</Value></Eq></And></And></Or>";
-
-                        query += "<And><Or><Eq><FieldRef Name='VerticalName' /><Value Type='Text'>All</Value></Eq>";
-                        query += "<Eq><FieldRef Name='Location' /><Value Type='Text'>All</Value></Eq></Or>";
-                        query += "<Eq><FieldRef Name='IdeaStatus' /><Value Type='Choice'>" + "Waiting for " + UniuqueapprovalDetails[j].split('\\')[2] + "</Value></Eq></And></Or>";
-
-                        if ($("#txtSearch").val() != "") {
-                            query += "</And></Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
-                        }
-                        else {
-                            query += "</Where><OrderBy><FieldRef Name='Modified' Ascending='False'/></OrderBy></Query>";
-                        }
-                    }
-                }
-
-                $().SPServices({
-                    operation: method,
-                    async: false,
-                    listName: ListName,
-                    CAMLQueryOptions: "<QueryOptions><ExpandUserField>True</ExpandUserField></QueryOptions>",
-                    CAMLViewFields: fieldsToRead,
-                    CAMLQuery: query,
-
-                    completefunc: function (xData, Status) {
-                        arrGetFilteredDataNewIdeas = [];
-                        if ($(xData.responseXML).SPFilterNode("z:row").length > 0) {
-                            IsClicked = true;
-                            $(xData.responseXML).SPFilterNode("z:row").each(function () {
-                                var IdeaNumber = $(this).attr("ows_IdeaNumber");
-                                var IdeaAuth = $(this).attr("ows_Author");
-                                var GetFilteredDataNewIdeas = {
-
-                                    "RaisedBy": $(this).attr("ows_RaisedBy"),
-                                    "IdeaTitle": $(this).attr("ows_LinkTitle"),
-                                    "IdeaDesc": $(this).attr("ows_IdeaDescription"),
-                                    "IdeaId": $(this).attr("ows_ID"),
-                                    "Modified": $(this).attr("ows_Modified"),
-                                    "IdeaNumber": $(this).attr("ows_IdeaNumber"),
-                                    "IdeaAuth": $(this).attr("ows_Author"),
-                                    "IdeaCreator": (IdeaAuth.split('#')[5]).replace(/,,/g, ","),
-                                    "IdeaCategory": $(this).attr("ows_IdeaLever"),
-                                    "IdeaFunction": $(this).attr("ows_VIdeaType"),
-                                    "IdeaStatus": $(this).attr("ows_IdeaStatus"),
-                                    "VIdeaType": $(this).attr("ows_VIdeaType"),
-                                    "RaisedBy": $(this).attr("ows_RaisedBy"),
-                                };
-                                arrGetFilteredDataNewIdeas.push(GetFilteredDataNewIdeas);
-                            });
-
-                        }
-
-                    }
-
-                });
-            }
-            else {
-                $("#NewIdeasTable").html("<div class='EmptyMsg'>No Ideas Available ...</div>");
-            }
-        }
-        MyFilteredDataNewIdeas();
-    }
-
-	*/
 
     /* Fetch Location Name from Config List */
     function fetchLocationName(location) {
