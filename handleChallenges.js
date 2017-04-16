@@ -166,6 +166,3 @@ function updateChallenge(challenge) {
         });
     } catch (err) { alert(err); }
 }
-
-
-//Its just added
