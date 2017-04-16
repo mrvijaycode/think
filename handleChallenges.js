@@ -166,3 +166,6 @@ function updateChallenge(challenge) {
         });
     } catch (err) { alert(err); }
 }
+
+
+//It is I have edited from web page
